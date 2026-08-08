@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="DoAnV2.API/DoAnV2.API.csproj" />
+  <Project Path="DoAnV2.Application/DoAnV2.Application.csproj" />
+  <Project Path="DoAnV2.Domain/DoAnV2.Domain.csproj" />
+  <Project Path="DoAnV2.Infrastructure/DoAnV2.Infrastructure.csproj" />
+</Solution>

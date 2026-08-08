@@ -1,0 +1,23 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v10.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v10.0": {
+      "DoAnV2.Domain/1.0.0": {
+        "runtime": {
+          "DoAnV2.Domain.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "DoAnV2.Domain/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

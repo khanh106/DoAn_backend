@@ -1,0 +1,15 @@
+C:\code\DoAnV2\backend\DoAnV2.Application\bin\Debug\net10.0\DoAnV2.Application.deps.json
+C:\code\DoAnV2\backend\DoAnV2.Application\bin\Debug\net10.0\DoAnV2.Application.dll
+C:\code\DoAnV2\backend\DoAnV2.Application\bin\Debug\net10.0\DoAnV2.Application.pdb
+C:\code\DoAnV2\backend\DoAnV2.Application\bin\Debug\net10.0\DoAnV2.Domain.dll
+C:\code\DoAnV2\backend\DoAnV2.Application\bin\Debug\net10.0\DoAnV2.Domain.pdb
+C:\code\DoAnV2\backend\DoAnV2.Application\obj\Debug\net10.0\DoAnV2.Application.csproj.AssemblyReference.cache
+C:\code\DoAnV2\backend\DoAnV2.Application\obj\Debug\net10.0\DoAnV2.Application.GeneratedMSBuildEditorConfig.editorconfig
+C:\code\DoAnV2\backend\DoAnV2.Application\obj\Debug\net10.0\DoAnV2.Application.AssemblyInfoInputs.cache
+C:\code\DoAnV2\backend\DoAnV2.Application\obj\Debug\net10.0\DoAnV2.Application.AssemblyInfo.cs
+C:\code\DoAnV2\backend\DoAnV2.Application\obj\Debug\net10.0\DoAnV2.Application.csproj.CoreCompileInputs.cache
+C:\code\DoAnV2\backend\DoAnV2.Application\obj\Debug\net10.0\DoAnV2.A.70C055CE.Up2Date
+C:\code\DoAnV2\backend\DoAnV2.Application\obj\Debug\net10.0\DoAnV2.Application.dll
+C:\code\DoAnV2\backend\DoAnV2.Application\obj\Debug\net10.0\refint\DoAnV2.Application.dll
+C:\code\DoAnV2\backend\DoAnV2.Application\obj\Debug\net10.0\DoAnV2.Application.pdb
+C:\code\DoAnV2\backend\DoAnV2.Application\obj\Debug\net10.0\ref\DoAnV2.Application.dll
