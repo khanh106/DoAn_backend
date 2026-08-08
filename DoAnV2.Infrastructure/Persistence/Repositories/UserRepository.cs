@@ -39,4 +39,16 @@ public class UserRepository : IUserRepository
     {
         await _db.Users.AddAsync(user, ct);
     }
+
+    public async Task<IReadOnlyList<User>> GetByIdsAsync(IEnumerable<Guid> ids, CancellationToken ct = default)
+    {
+        var idSet = ids.Distinct().ToHashSet();
+        if (idSet.Count == 0)
+            return Array.Empty<User>();
+
+        return await _db.Users
+            .Include(u => u.Role)
+            .Where(u => idSet.Contains(u.Id))
+            .ToListAsync(ct);
+    }
 }

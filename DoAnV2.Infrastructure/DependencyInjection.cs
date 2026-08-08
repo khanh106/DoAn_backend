@@ -29,6 +29,8 @@ public static class DependencyInjection
         services.AddScoped<IFarmAreaRepository, FarmAreaRepository>();
         services.AddScoped<IMaterialItemRepository, MaterialItemRepository>();
         services.AddScoped<IInventoryLogRepository, InventoryLogRepository>();
+        services.AddScoped<IBatchRepository, BatchRepository>();
+        services.AddScoped<IBatchWorkerRepository, BatchWorkerRepository>();
 
         // ============ Auth / Wallet / JWT ============
         services.AddScoped<IPasswordHasher, PasswordHasher>();

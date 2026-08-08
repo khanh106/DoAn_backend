@@ -15,7 +15,9 @@ public class UnitOfWork : IUnitOfWork
         IProductRepository products,
         IFarmAreaRepository farmAreas,
         IMaterialItemRepository materialItems,
-        IInventoryLogRepository inventoryLogs)
+        IInventoryLogRepository inventoryLogs,
+        IBatchRepository batches,
+        IBatchWorkerRepository batchWorkers)
     {
         _db = db;
         Users = users;
@@ -25,6 +27,8 @@ public class UnitOfWork : IUnitOfWork
         FarmAreas = farmAreas;
         MaterialItems = materialItems;
         InventoryLogs = inventoryLogs;
+        Batches = batches;
+        BatchWorkers = batchWorkers;
     }
 
     public IUserRepository Users { get; }
@@ -34,6 +38,8 @@ public class UnitOfWork : IUnitOfWork
     public IFarmAreaRepository FarmAreas { get; }
     public IMaterialItemRepository MaterialItems { get; }
     public IInventoryLogRepository InventoryLogs { get; }
+    public IBatchRepository Batches { get; }
+    public IBatchWorkerRepository BatchWorkers { get; }
 
     public Task<int> SaveChangesAsync(CancellationToken ct = default)
         => _db.SaveChangesAsync(ct);

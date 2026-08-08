@@ -11,6 +11,8 @@ public interface IUnitOfWork
     IFarmAreaRepository FarmAreas { get; }
     IMaterialItemRepository MaterialItems { get; }
     IInventoryLogRepository InventoryLogs { get; }
+    IBatchRepository Batches { get; }
+    IBatchWorkerRepository BatchWorkers { get; }
     Task<int> SaveChangesAsync(CancellationToken ct = default);
 }
 
@@ -21,4 +23,7 @@ public interface IUserRepository
     Task<IReadOnlyList<User>> GetPendingUsersAsync(CancellationToken ct = default);
     Task<bool> EmailExistsAsync(string email, CancellationToken ct = default);
     Task AddAsync(User user, CancellationToken ct = default);
+
+    /// <summary>Lookup nhiều user theo danh sách Guid - dùng để validate assignedWorkerIds.</summary>
+    Task<IReadOnlyList<User>> GetByIdsAsync(IEnumerable<Guid> ids, CancellationToken ct = default);
 }
