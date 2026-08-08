@@ -1856,7 +1856,9 @@
           "DoAnV2.Domain": "1.0.0",
           "FluentValidation": "11.9.0",
           "FluentValidation.DependencyInjectionExtensions": "11.9.0",
-          "MediatR": "12.4.0"
+          "MediatR": "12.4.0",
+          "Microsoft.IdentityModel.Tokens": "8.0.2",
+          "System.IdentityModel.Tokens.Jwt": "8.0.2"
         },
         "compile": {
           "bin/placeholder/DoAnV2.Application.dll": {}
@@ -5198,11 +5200,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "c:\\code\\DoAnV2\\backend\\DoAnV2.API\\DoAnV2.API.csproj",
+      "projectUniqueName": "C:\\code\\DoAnV2\\backend\\DoAnV2.API\\DoAnV2.API.csproj",
       "projectName": "DoAnV2.API",
-      "projectPath": "c:\\code\\DoAnV2\\backend\\DoAnV2.API\\DoAnV2.API.csproj",
+      "projectPath": "C:\\code\\DoAnV2\\backend\\DoAnV2.API\\DoAnV2.API.csproj",
       "packagesPath": "C:\\Users\\khanh\\.nuget\\packages\\",
-      "outputPath": "c:\\code\\DoAnV2\\backend\\DoAnV2.API\\obj\\",
+      "outputPath": "C:\\code\\DoAnV2\\backend\\DoAnV2.API\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\khanh\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -5217,11 +5219,11 @@
         "net10.0": {
           "targetAlias": "net10.0",
           "projectReferences": {
-            "c:\\code\\DoAnV2\\backend\\DoAnV2.Application\\DoAnV2.Application.csproj": {
-              "projectPath": "c:\\code\\DoAnV2\\backend\\DoAnV2.Application\\DoAnV2.Application.csproj"
+            "C:\\code\\DoAnV2\\backend\\DoAnV2.Application\\DoAnV2.Application.csproj": {
+              "projectPath": "C:\\code\\DoAnV2\\backend\\DoAnV2.Application\\DoAnV2.Application.csproj"
             },
-            "c:\\code\\DoAnV2\\backend\\DoAnV2.Infrastructure\\DoAnV2.Infrastructure.csproj": {
-              "projectPath": "c:\\code\\DoAnV2\\backend\\DoAnV2.Infrastructure\\DoAnV2.Infrastructure.csproj"
+            "C:\\code\\DoAnV2\\backend\\DoAnV2.Infrastructure\\DoAnV2.Infrastructure.csproj": {
+              "projectPath": "C:\\code\\DoAnV2\\backend\\DoAnV2.Infrastructure\\DoAnV2.Infrastructure.csproj"
             }
           }
         }

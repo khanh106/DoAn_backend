@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "aLu4f5TE78g=",
+  "dgSpecHash": "WHKvki2QwJ8=",
   "success": true,
-  "projectFilePath": "c:\\code\\DoAnV2\\backend\\DoAnV2.Infrastructure\\DoAnV2.Infrastructure.csproj",
+  "projectFilePath": "C:\\code\\DoAnV2\\backend\\DoAnV2.Infrastructure\\DoAnV2.Infrastructure.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\khanh\\.nuget\\packages\\adraffy.ensnormalize\\0.1.5\\adraffy.ensnormalize.0.1.5.nupkg.sha512",
     "C:\\Users\\khanh\\.nuget\\packages\\automapper\\12.0.1\\automapper.12.0.1.nupkg.sha512",

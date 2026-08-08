@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "KdNgYG4JCq0=",
+  "dgSpecHash": "D5Mxz28CcA8=",
   "success": true,
-  "projectFilePath": "c:\\code\\DoAnV2\\backend\\DoAnV2.API\\DoAnV2.API.csproj",
+  "projectFilePath": "C:\\code\\DoAnV2\\backend\\DoAnV2.API\\DoAnV2.API.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\khanh\\.nuget\\packages\\adraffy.ensnormalize\\0.1.5\\adraffy.ensnormalize.0.1.5.nupkg.sha512",
     "C:\\Users\\khanh\\.nuget\\packages\\aspnetcoreratelimit\\5.0.0\\aspnetcoreratelimit.5.0.0.nupkg.sha512",

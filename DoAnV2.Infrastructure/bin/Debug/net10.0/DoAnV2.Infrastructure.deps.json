@@ -16,6 +16,7 @@
           "Microsoft.EntityFrameworkCore": "9.0.0",
           "Microsoft.EntityFrameworkCore.Design": "9.0.0",
           "Microsoft.EntityFrameworkCore.SqlServer": "9.0.0",
+          "NBitcoin": "7.0.42",
           "Nethereum.Web3": "4.18.0",
           "Newtonsoft.Json": "13.0.3",
           "QRCoder": "1.4.3",
@@ -687,6 +688,17 @@
           }
         }
       },
+      "NBitcoin/7.0.42": {
+        "dependencies": {
+          "Newtonsoft.Json": "13.0.3"
+        },
+        "runtime": {
+          "lib/net6.0/NBitcoin.dll": {
+            "assemblyVersion": "7.0.42.0",
+            "fileVersion": "7.0.42.0"
+          }
+        }
+      },
       "NBitcoin.Secp256k1/3.1.1": {
         "runtime": {
           "lib/net6.0/NBitcoin.Secp256k1.dll": {
@@ -1154,7 +1166,9 @@
           "DoAnV2.Domain": "1.0.0",
           "FluentValidation": "11.9.0",
           "FluentValidation.DependencyInjectionExtensions": "11.9.0",
-          "MediatR": "12.4.0"
+          "MediatR": "12.4.0",
+          "Microsoft.IdentityModel.Tokens": "8.0.2",
+          "System.IdentityModel.Tokens.Jwt": "8.0.2"
         },
         "runtime": {
           "DoAnV2.Application.dll": {
@@ -1451,6 +1465,13 @@
       "sha512": "sha512-YqueG52R/Xej4VVbKuRIodjiAhV0HR/XVbLbNrJhCZnzjnSjgMJ/dCdV0akQQxavX6hp/LC6rqLGLcXeQYU7XA==",
       "path": "mono.texttemplating/3.0.0",
       "hashPath": "mono.texttemplating.3.0.0.nupkg.sha512"
+    },
+    "NBitcoin/7.0.42": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-pN4d5MdYs/iYSZ++3fqN+Mw62cI1Ch7lY1G5gL3Dhnt2jW4aazGkvUZCTmr0YNUcWcWvSuTgivhfXLmPCjBsNw==",
+      "path": "nbitcoin/7.0.42",
+      "hashPath": "nbitcoin.7.0.42.nupkg.sha512"
     },
     "NBitcoin.Secp256k1/3.1.1": {
       "type": "package",

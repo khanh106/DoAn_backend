@@ -1,4 +1,4 @@
-namespace DoAnV2.Infrastructure.Options;
+namespace DoAnV2.Application.Common.Options;
 
 public class JwtOptions
 {

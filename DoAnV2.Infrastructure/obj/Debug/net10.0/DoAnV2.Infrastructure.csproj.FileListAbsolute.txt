@@ -17,3 +17,4 @@ C:\code\DoAnV2\backend\DoAnV2.Infrastructure\obj\Debug\net10.0\refint\DoAnV2.Inf
 C:\code\DoAnV2\backend\DoAnV2.Infrastructure\obj\Debug\net10.0\DoAnV2.Infrastructure.pdb
 C:\code\DoAnV2\backend\DoAnV2.Infrastructure\obj\Debug\net10.0\DoAnV2.Infrastructure.genruntimeconfig.cache
 C:\code\DoAnV2\backend\DoAnV2.Infrastructure\obj\Debug\net10.0\ref\DoAnV2.Infrastructure.dll
+C:\code\DoAnV2\backend\DoAnV2.Infrastructure\obj\Debug\net10.0\DoAnV2.Infrastructure.sourcelink.json

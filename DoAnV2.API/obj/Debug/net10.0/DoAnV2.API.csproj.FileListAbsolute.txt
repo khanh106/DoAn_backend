@@ -227,3 +227,8 @@ C:\code\DoAnV2\backend\DoAnV2.API\obj\Debug\net10.0\refint\DoAnV2.API.dll
 C:\code\DoAnV2\backend\DoAnV2.API\obj\Debug\net10.0\DoAnV2.API.pdb
 C:\code\DoAnV2\backend\DoAnV2.API\obj\Debug\net10.0\DoAnV2.API.genruntimeconfig.cache
 C:\code\DoAnV2\backend\DoAnV2.API\obj\Debug\net10.0\ref\DoAnV2.API.dll
+C:\code\DoAnV2\backend\DoAnV2.API\obj\Debug\net10.0\DoAnV2.API.sourcelink.json
+C:\code\DoAnV2\backend\DoAnV2.API\bin\Debug\net10.0\NBitcoin.dll
+C:\code\DoAnV2\backend\DoAnV2.API\bin\Debug\net10.0\Scrutor.dll
+C:\code\DoAnV2\backend\DoAnV2.API\bin\Debug\net10.0\Swashbuckle.AspNetCore.Filters.dll
+C:\code\DoAnV2\backend\DoAnV2.API\bin\Debug\net10.0\Swashbuckle.AspNetCore.Filters.Abstractions.dll

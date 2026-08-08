@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "c:\\code\\DoAnV2\\backend\\DoAnV2.API\\DoAnV2.API.csproj": {}
+    "C:\\code\\DoAnV2\\backend\\DoAnV2.API\\DoAnV2.API.csproj": {}
   },
   "projects": {
-    "c:\\code\\DoAnV2\\backend\\DoAnV2.API\\DoAnV2.API.csproj": {
+    "C:\\code\\DoAnV2\\backend\\DoAnV2.API\\DoAnV2.API.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "c:\\code\\DoAnV2\\backend\\DoAnV2.API\\DoAnV2.API.csproj",
+        "projectUniqueName": "C:\\code\\DoAnV2\\backend\\DoAnV2.API\\DoAnV2.API.csproj",
         "projectName": "DoAnV2.API",
-        "projectPath": "c:\\code\\DoAnV2\\backend\\DoAnV2.API\\DoAnV2.API.csproj",
+        "projectPath": "C:\\code\\DoAnV2\\backend\\DoAnV2.API\\DoAnV2.API.csproj",
         "packagesPath": "C:\\Users\\khanh\\.nuget\\packages\\",
-        "outputPath": "c:\\code\\DoAnV2\\backend\\DoAnV2.API\\obj\\",
+        "outputPath": "C:\\code\\DoAnV2\\backend\\DoAnV2.API\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\khanh\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -26,11 +26,11 @@
           "net10.0": {
             "targetAlias": "net10.0",
             "projectReferences": {
-              "c:\\code\\DoAnV2\\backend\\DoAnV2.Application\\DoAnV2.Application.csproj": {
-                "projectPath": "c:\\code\\DoAnV2\\backend\\DoAnV2.Application\\DoAnV2.Application.csproj"
+              "C:\\code\\DoAnV2\\backend\\DoAnV2.Application\\DoAnV2.Application.csproj": {
+                "projectPath": "C:\\code\\DoAnV2\\backend\\DoAnV2.Application\\DoAnV2.Application.csproj"
               },
-              "c:\\code\\DoAnV2\\backend\\DoAnV2.Infrastructure\\DoAnV2.Infrastructure.csproj": {
-                "projectPath": "c:\\code\\DoAnV2\\backend\\DoAnV2.Infrastructure\\DoAnV2.Infrastructure.csproj"
+              "C:\\code\\DoAnV2\\backend\\DoAnV2.Infrastructure\\DoAnV2.Infrastructure.csproj": {
+                "projectPath": "C:\\code\\DoAnV2\\backend\\DoAnV2.Infrastructure\\DoAnV2.Infrastructure.csproj"
               }
             }
           }
@@ -537,14 +537,14 @@
         }
       }
     },
-    "c:\\code\\DoAnV2\\backend\\DoAnV2.Application\\DoAnV2.Application.csproj": {
+    "C:\\code\\DoAnV2\\backend\\DoAnV2.Application\\DoAnV2.Application.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "c:\\code\\DoAnV2\\backend\\DoAnV2.Application\\DoAnV2.Application.csproj",
+        "projectUniqueName": "C:\\code\\DoAnV2\\backend\\DoAnV2.Application\\DoAnV2.Application.csproj",
         "projectName": "DoAnV2.Application",
-        "projectPath": "c:\\code\\DoAnV2\\backend\\DoAnV2.Application\\DoAnV2.Application.csproj",
+        "projectPath": "C:\\code\\DoAnV2\\backend\\DoAnV2.Application\\DoAnV2.Application.csproj",
         "packagesPath": "C:\\Users\\khanh\\.nuget\\packages\\",
-        "outputPath": "c:\\code\\DoAnV2\\backend\\DoAnV2.Application\\obj\\",
+        "outputPath": "C:\\code\\DoAnV2\\backend\\DoAnV2.Application\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\khanh\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -559,8 +559,8 @@
           "net10.0": {
             "targetAlias": "net10.0",
             "projectReferences": {
-              "c:\\code\\DoAnV2\\backend\\DoAnV2.Domain\\DoAnV2.Domain.csproj": {
-                "projectPath": "c:\\code\\DoAnV2\\backend\\DoAnV2.Domain\\DoAnV2.Domain.csproj"
+              "C:\\code\\DoAnV2\\backend\\DoAnV2.Domain\\DoAnV2.Domain.csproj": {
+                "projectPath": "C:\\code\\DoAnV2\\backend\\DoAnV2.Domain\\DoAnV2.Domain.csproj"
               }
             }
           }
@@ -617,6 +617,14 @@
             "Microsoft.Extensions.Options": {
               "target": "Package",
               "version": "[9.0.0, )"
+            },
+            "Microsoft.IdentityModel.Tokens": {
+              "target": "Package",
+              "version": "[8.0.2, )"
+            },
+            "System.IdentityModel.Tokens.Jwt": {
+              "target": "Package",
+              "version": "[8.0.2, )"
             }
           },
           "imports": [
@@ -913,14 +921,14 @@
         }
       }
     },
-    "c:\\code\\DoAnV2\\backend\\DoAnV2.Domain\\DoAnV2.Domain.csproj": {
+    "C:\\code\\DoAnV2\\backend\\DoAnV2.Domain\\DoAnV2.Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "c:\\code\\DoAnV2\\backend\\DoAnV2.Domain\\DoAnV2.Domain.csproj",
+        "projectUniqueName": "C:\\code\\DoAnV2\\backend\\DoAnV2.Domain\\DoAnV2.Domain.csproj",
         "projectName": "DoAnV2.Domain",
-        "projectPath": "c:\\code\\DoAnV2\\backend\\DoAnV2.Domain\\DoAnV2.Domain.csproj",
+        "projectPath": "C:\\code\\DoAnV2\\backend\\DoAnV2.Domain\\DoAnV2.Domain.csproj",
         "packagesPath": "C:\\Users\\khanh\\.nuget\\packages\\",
-        "outputPath": "c:\\code\\DoAnV2\\backend\\DoAnV2.Domain\\obj\\",
+        "outputPath": "C:\\code\\DoAnV2\\backend\\DoAnV2.Domain\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\khanh\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -1246,14 +1254,14 @@
         }
       }
     },
-    "c:\\code\\DoAnV2\\backend\\DoAnV2.Infrastructure\\DoAnV2.Infrastructure.csproj": {
+    "C:\\code\\DoAnV2\\backend\\DoAnV2.Infrastructure\\DoAnV2.Infrastructure.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "c:\\code\\DoAnV2\\backend\\DoAnV2.Infrastructure\\DoAnV2.Infrastructure.csproj",
+        "projectUniqueName": "C:\\code\\DoAnV2\\backend\\DoAnV2.Infrastructure\\DoAnV2.Infrastructure.csproj",
         "projectName": "DoAnV2.Infrastructure",
-        "projectPath": "c:\\code\\DoAnV2\\backend\\DoAnV2.Infrastructure\\DoAnV2.Infrastructure.csproj",
+        "projectPath": "C:\\code\\DoAnV2\\backend\\DoAnV2.Infrastructure\\DoAnV2.Infrastructure.csproj",
         "packagesPath": "C:\\Users\\khanh\\.nuget\\packages\\",
-        "outputPath": "c:\\code\\DoAnV2\\backend\\DoAnV2.Infrastructure\\obj\\",
+        "outputPath": "C:\\code\\DoAnV2\\backend\\DoAnV2.Infrastructure\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\khanh\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -1268,11 +1276,11 @@
           "net10.0": {
             "targetAlias": "net10.0",
             "projectReferences": {
-              "c:\\code\\DoAnV2\\backend\\DoAnV2.Application\\DoAnV2.Application.csproj": {
-                "projectPath": "c:\\code\\DoAnV2\\backend\\DoAnV2.Application\\DoAnV2.Application.csproj"
+              "C:\\code\\DoAnV2\\backend\\DoAnV2.Application\\DoAnV2.Application.csproj": {
+                "projectPath": "C:\\code\\DoAnV2\\backend\\DoAnV2.Application\\DoAnV2.Application.csproj"
               },
-              "c:\\code\\DoAnV2\\backend\\DoAnV2.Domain\\DoAnV2.Domain.csproj": {
-                "projectPath": "c:\\code\\DoAnV2\\backend\\DoAnV2.Domain\\DoAnV2.Domain.csproj"
+              "C:\\code\\DoAnV2\\backend\\DoAnV2.Domain\\DoAnV2.Domain.csproj": {
+                "projectPath": "C:\\code\\DoAnV2\\backend\\DoAnV2.Domain\\DoAnV2.Domain.csproj"
               }
             }
           }

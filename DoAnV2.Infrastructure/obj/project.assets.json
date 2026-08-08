@@ -1691,7 +1691,9 @@
           "MediatR": "12.4.0",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.0",
           "Microsoft.Extensions.Logging.Abstractions": "9.0.0",
-          "Microsoft.Extensions.Options": "9.0.0"
+          "Microsoft.Extensions.Options": "9.0.0",
+          "Microsoft.IdentityModel.Tokens": "8.0.2",
+          "System.IdentityModel.Tokens.Jwt": "8.0.2"
         },
         "compile": {
           "bin/placeholder/DoAnV2.Application.dll": {}
@@ -4596,11 +4598,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "c:\\code\\DoAnV2\\backend\\DoAnV2.Infrastructure\\DoAnV2.Infrastructure.csproj",
+      "projectUniqueName": "C:\\code\\DoAnV2\\backend\\DoAnV2.Infrastructure\\DoAnV2.Infrastructure.csproj",
       "projectName": "DoAnV2.Infrastructure",
-      "projectPath": "c:\\code\\DoAnV2\\backend\\DoAnV2.Infrastructure\\DoAnV2.Infrastructure.csproj",
+      "projectPath": "C:\\code\\DoAnV2\\backend\\DoAnV2.Infrastructure\\DoAnV2.Infrastructure.csproj",
       "packagesPath": "C:\\Users\\khanh\\.nuget\\packages\\",
-      "outputPath": "c:\\code\\DoAnV2\\backend\\DoAnV2.Infrastructure\\obj\\",
+      "outputPath": "C:\\code\\DoAnV2\\backend\\DoAnV2.Infrastructure\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\khanh\\AppData\\Roaming\\NuGet\\NuGet.Config"
