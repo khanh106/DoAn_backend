@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("DoAnV2.Infrastructure")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9ab73d9519cd5378898fcbffa773aa73e303543c")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+50f57a872ce3b80e4f34bf49d32b17c2b7e9961e")]
 [assembly: System.Reflection.AssemblyProductAttribute("DoAnV2.Infrastructure")]
 [assembly: System.Reflection.AssemblyTitleAttribute("DoAnV2.Infrastructure")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

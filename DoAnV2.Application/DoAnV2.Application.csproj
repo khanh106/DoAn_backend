@@ -24,4 +24,8 @@
     <NoWarn>NU1903;NU1608;NU1605</NoWarn>
   </PropertyGroup>
 
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
 </Project>

@@ -232,3 +232,6 @@ C:\code\DoAnV2\backend\DoAnV2.API\bin\Debug\net10.0\NBitcoin.dll
 C:\code\DoAnV2\backend\DoAnV2.API\bin\Debug\net10.0\Scrutor.dll
 C:\code\DoAnV2\backend\DoAnV2.API\bin\Debug\net10.0\Swashbuckle.AspNetCore.Filters.dll
 C:\code\DoAnV2\backend\DoAnV2.API\bin\Debug\net10.0\Swashbuckle.AspNetCore.Filters.Abstractions.dll
+C:\code\DoAnV2\backend\DoAnV2.API\bin\Debug\net10.0\Contracts\abi.json
+C:\code\DoAnV2\backend\DoAnV2.API\bin\Debug\net10.0\AWSSDK.Core.dll
+C:\code\DoAnV2\backend\DoAnV2.API\bin\Debug\net10.0\AWSSDK.S3.dll

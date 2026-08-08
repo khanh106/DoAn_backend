@@ -42,14 +42,17 @@ public class SweepFarmerWalletCommandHandler : IRequestHandler<SweepFarmerWallet
             throw new ValidationException(
                 $"Chỉ thu hồi ETH từ user có Status = APPROVED. Hiện tại: {user.Status}.");
 
-        var txHash = await _blockchain.SweepFarmerWalletAsync(user.WalletAddress!, ct);
+        var txHash = await _blockchain.SweepFarmerWalletAsync(
+            user.WalletAddress!,
+            user.EncryptedPrivateKey,
+            ct);
 
         return new SweepFarmerWalletResponse(
             UserId: user.Id,
             WalletAddress: user.WalletAddress!,
             TransactionHash: txHash,
             Message: txHash is null
-                ? "Sweep đã bị skip (WalletFunding.Enabled=false). Không có tx hash."
-                : $"Đã khởi tạo sweep. TxHash: {txHash}. Đợi TASK 03 để tx được gửi thật lên chain.");
+                ? "Sweep đã bị skip (số dư thấp hơn MinFarmerBalanceToKeep hoặc WalletFunding.Enabled=false). Không có tx hash."
+                : $"Đã gửi sweep tx. TxHash: {txHash}.");
     }
 }
