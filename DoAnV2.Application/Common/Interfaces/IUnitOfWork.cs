@@ -13,6 +13,8 @@ public interface IUnitOfWork
     IInventoryLogRepository InventoryLogs { get; }
     IBatchRepository Batches { get; }
     IBatchWorkerRepository BatchWorkers { get; }
+    ICultivationLogRepository CultivationLogs { get; }
+    IHarvestRepository Harvests { get; }
     Task<int> SaveChangesAsync(CancellationToken ct = default);
 }
 
