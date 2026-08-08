@@ -94,6 +94,28 @@ public class ApplicationDbContext : DbContext
             e.HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Restrict);
         });
 
+        b.Entity<FruitType>(e =>
+        {
+            e.HasIndex(x => new { x.ProcessorId, x.Code }).IsUnique();
+            e.HasOne(x => x.Processor).WithMany().HasForeignKey(x => x.ProcessorId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        b.Entity<Product>(e =>
+        {
+            e.HasOne(x => x.FruitType).WithMany(f => f.Products).HasForeignKey(x => x.FruitTypeId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        b.Entity<FarmArea>(e =>
+        {
+            e.HasOne(x => x.Processor).WithMany().HasForeignKey(x => x.ProcessorId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        b.Entity<MaterialItem>(e =>
+        {
+            e.HasIndex(x => new { x.ProcessorId, x.Code }).IsUnique();
+            e.HasOne(x => x.Processor).WithMany().HasForeignKey(x => x.ProcessorId).OnDelete(DeleteBehavior.Restrict);
+        });
+
         // ===== Seed =====
         b.ApplySeed();
         var shadowFks = b.Model.GetEntityTypes()

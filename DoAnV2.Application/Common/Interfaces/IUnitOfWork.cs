@@ -6,6 +6,11 @@ public interface IUnitOfWork
 {
     IUserRepository Users { get; }
     IBlockchainTransactionRepository BlockchainTransactions { get; }
+    IFruitTypeRepository FruitTypes { get; }
+    IProductRepository Products { get; }
+    IFarmAreaRepository FarmAreas { get; }
+    IMaterialItemRepository MaterialItems { get; }
+    IInventoryLogRepository InventoryLogs { get; }
     Task<int> SaveChangesAsync(CancellationToken ct = default);
 }
 

@@ -1,5 +1,6 @@
 C:\code\DoAnV2\backend\DoAnV2.API\bin\Debug\net10.0\appsettings.Development.json
 C:\code\DoAnV2\backend\DoAnV2.API\bin\Debug\net10.0\appsettings.json
+C:\code\DoAnV2\backend\DoAnV2.API\bin\Debug\net10.0\Contracts\abi.json
 C:\code\DoAnV2\backend\DoAnV2.API\bin\Debug\net10.0\DoAnV2.API.staticwebassets.endpoints.json
 C:\code\DoAnV2\backend\DoAnV2.API\bin\Debug\net10.0\LatoFont\Lato-Black.ttf
 C:\code\DoAnV2\backend\DoAnV2.API\bin\Debug\net10.0\LatoFont\Lato-BlackItalic.ttf
@@ -29,6 +30,8 @@ C:\code\DoAnV2\backend\DoAnV2.API\bin\Debug\net10.0\ADRaffy.ENSNormalize.dll
 C:\code\DoAnV2\backend\DoAnV2.API\bin\Debug\net10.0\AspNetCoreRateLimit.dll
 C:\code\DoAnV2\backend\DoAnV2.API\bin\Debug\net10.0\AutoMapper.dll
 C:\code\DoAnV2\backend\DoAnV2.API\bin\Debug\net10.0\AutoMapper.Extensions.Microsoft.DependencyInjection.dll
+C:\code\DoAnV2\backend\DoAnV2.API\bin\Debug\net10.0\AWSSDK.Core.dll
+C:\code\DoAnV2\backend\DoAnV2.API\bin\Debug\net10.0\AWSSDK.S3.dll
 C:\code\DoAnV2\backend\DoAnV2.API\bin\Debug\net10.0\Azure.Core.dll
 C:\code\DoAnV2\backend\DoAnV2.API\bin\Debug\net10.0\Azure.Identity.dll
 C:\code\DoAnV2\backend\DoAnV2.API\bin\Debug\net10.0\BCrypt.Net-Next.dll
@@ -66,6 +69,7 @@ C:\code\DoAnV2\backend\DoAnV2.API\bin\Debug\net10.0\Microsoft.OpenApi.dll
 C:\code\DoAnV2\backend\DoAnV2.API\bin\Debug\net10.0\Microsoft.SqlServer.Server.dll
 C:\code\DoAnV2\backend\DoAnV2.API\bin\Debug\net10.0\Microsoft.Win32.SystemEvents.dll
 C:\code\DoAnV2\backend\DoAnV2.API\bin\Debug\net10.0\Mono.TextTemplating.dll
+C:\code\DoAnV2\backend\DoAnV2.API\bin\Debug\net10.0\NBitcoin.dll
 C:\code\DoAnV2\backend\DoAnV2.API\bin\Debug\net10.0\NBitcoin.Secp256k1.dll
 C:\code\DoAnV2\backend\DoAnV2.API\bin\Debug\net10.0\Nethereum.ABI.dll
 C:\code\DoAnV2\backend\DoAnV2.API\bin\Debug\net10.0\Nethereum.Accounts.dll
@@ -87,6 +91,7 @@ C:\code\DoAnV2\backend\DoAnV2.API\bin\Debug\net10.0\Newtonsoft.Json.dll
 C:\code\DoAnV2\backend\DoAnV2.API\bin\Debug\net10.0\BouncyCastle.Crypto.dll
 C:\code\DoAnV2\backend\DoAnV2.API\bin\Debug\net10.0\QRCoder.dll
 C:\code\DoAnV2\backend\DoAnV2.API\bin\Debug\net10.0\QuestPDF.dll
+C:\code\DoAnV2\backend\DoAnV2.API\bin\Debug\net10.0\Scrutor.dll
 C:\code\DoAnV2\backend\DoAnV2.API\bin\Debug\net10.0\Serilog.dll
 C:\code\DoAnV2\backend\DoAnV2.API\bin\Debug\net10.0\Serilog.AspNetCore.dll
 C:\code\DoAnV2\backend\DoAnV2.API\bin\Debug\net10.0\Serilog.Extensions.Hosting.dll
@@ -96,6 +101,8 @@ C:\code\DoAnV2\backend\DoAnV2.API\bin\Debug\net10.0\Serilog.Settings.Configurati
 C:\code\DoAnV2\backend\DoAnV2.API\bin\Debug\net10.0\Serilog.Sinks.Console.dll
 C:\code\DoAnV2\backend\DoAnV2.API\bin\Debug\net10.0\Serilog.Sinks.Debug.dll
 C:\code\DoAnV2\backend\DoAnV2.API\bin\Debug\net10.0\Serilog.Sinks.File.dll
+C:\code\DoAnV2\backend\DoAnV2.API\bin\Debug\net10.0\Swashbuckle.AspNetCore.Filters.dll
+C:\code\DoAnV2\backend\DoAnV2.API\bin\Debug\net10.0\Swashbuckle.AspNetCore.Filters.Abstractions.dll
 C:\code\DoAnV2\backend\DoAnV2.API\bin\Debug\net10.0\Swashbuckle.AspNetCore.Swagger.dll
 C:\code\DoAnV2\backend\DoAnV2.API\bin\Debug\net10.0\Swashbuckle.AspNetCore.SwaggerGen.dll
 C:\code\DoAnV2\backend\DoAnV2.API\bin\Debug\net10.0\Swashbuckle.AspNetCore.SwaggerUI.dll
@@ -212,6 +219,7 @@ C:\code\DoAnV2\backend\DoAnV2.API\obj\Debug\net10.0\DoAnV2.API.AssemblyInfo.cs
 C:\code\DoAnV2\backend\DoAnV2.API\obj\Debug\net10.0\DoAnV2.API.csproj.CoreCompileInputs.cache
 C:\code\DoAnV2\backend\DoAnV2.API\obj\Debug\net10.0\DoAnV2.API.MvcApplicationPartsAssemblyInfo.cs
 C:\code\DoAnV2\backend\DoAnV2.API\obj\Debug\net10.0\DoAnV2.API.MvcApplicationPartsAssemblyInfo.cache
+C:\code\DoAnV2\backend\DoAnV2.API\obj\Debug\net10.0\DoAnV2.API.sourcelink.json
 C:\code\DoAnV2\backend\DoAnV2.API\obj\Debug\net10.0\rjimswa.dswa.cache.json
 C:\code\DoAnV2\backend\DoAnV2.API\obj\Debug\net10.0\rjsmrazor.dswa.cache.json
 C:\code\DoAnV2\backend\DoAnV2.API\obj\Debug\net10.0\rjsmcshtml.dswa.cache.json
@@ -227,11 +235,3 @@ C:\code\DoAnV2\backend\DoAnV2.API\obj\Debug\net10.0\refint\DoAnV2.API.dll
 C:\code\DoAnV2\backend\DoAnV2.API\obj\Debug\net10.0\DoAnV2.API.pdb
 C:\code\DoAnV2\backend\DoAnV2.API\obj\Debug\net10.0\DoAnV2.API.genruntimeconfig.cache
 C:\code\DoAnV2\backend\DoAnV2.API\obj\Debug\net10.0\ref\DoAnV2.API.dll
-C:\code\DoAnV2\backend\DoAnV2.API\obj\Debug\net10.0\DoAnV2.API.sourcelink.json
-C:\code\DoAnV2\backend\DoAnV2.API\bin\Debug\net10.0\NBitcoin.dll
-C:\code\DoAnV2\backend\DoAnV2.API\bin\Debug\net10.0\Scrutor.dll
-C:\code\DoAnV2\backend\DoAnV2.API\bin\Debug\net10.0\Swashbuckle.AspNetCore.Filters.dll
-C:\code\DoAnV2\backend\DoAnV2.API\bin\Debug\net10.0\Swashbuckle.AspNetCore.Filters.Abstractions.dll
-C:\code\DoAnV2\backend\DoAnV2.API\bin\Debug\net10.0\Contracts\abi.json
-C:\code\DoAnV2\backend\DoAnV2.API\bin\Debug\net10.0\AWSSDK.Core.dll
-C:\code\DoAnV2\backend\DoAnV2.API\bin\Debug\net10.0\AWSSDK.S3.dll

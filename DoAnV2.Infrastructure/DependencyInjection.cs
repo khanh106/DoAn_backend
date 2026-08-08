@@ -24,6 +24,11 @@ public static class DependencyInjection
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IBlockchainTransactionRepository, BlockchainTransactionRepository>();
+        services.AddScoped<IFruitTypeRepository, FruitTypeRepository>();
+        services.AddScoped<IProductRepository, ProductRepository>();
+        services.AddScoped<IFarmAreaRepository, FarmAreaRepository>();
+        services.AddScoped<IMaterialItemRepository, MaterialItemRepository>();
+        services.AddScoped<IInventoryLogRepository, InventoryLogRepository>();
 
         // ============ Auth / Wallet / JWT ============
         services.AddScoped<IPasswordHasher, PasswordHasher>();

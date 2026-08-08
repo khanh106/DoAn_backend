@@ -10,15 +10,30 @@ public class UnitOfWork : IUnitOfWork
     public UnitOfWork(
         ApplicationDbContext db,
         IUserRepository users,
-        IBlockchainTransactionRepository blockchainTransactions)
+        IBlockchainTransactionRepository blockchainTransactions,
+        IFruitTypeRepository fruitTypes,
+        IProductRepository products,
+        IFarmAreaRepository farmAreas,
+        IMaterialItemRepository materialItems,
+        IInventoryLogRepository inventoryLogs)
     {
         _db = db;
         Users = users;
         BlockchainTransactions = blockchainTransactions;
+        FruitTypes = fruitTypes;
+        Products = products;
+        FarmAreas = farmAreas;
+        MaterialItems = materialItems;
+        InventoryLogs = inventoryLogs;
     }
 
     public IUserRepository Users { get; }
     public IBlockchainTransactionRepository BlockchainTransactions { get; }
+    public IFruitTypeRepository FruitTypes { get; }
+    public IProductRepository Products { get; }
+    public IFarmAreaRepository FarmAreas { get; }
+    public IMaterialItemRepository MaterialItems { get; }
+    public IInventoryLogRepository InventoryLogs { get; }
 
     public Task<int> SaveChangesAsync(CancellationToken ct = default)
         => _db.SaveChangesAsync(ct);

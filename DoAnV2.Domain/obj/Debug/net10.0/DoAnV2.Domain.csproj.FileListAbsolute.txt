@@ -5,8 +5,8 @@ C:\code\DoAnV2\backend\DoAnV2.Domain\obj\Debug\net10.0\DoAnV2.Domain.GeneratedMS
 C:\code\DoAnV2\backend\DoAnV2.Domain\obj\Debug\net10.0\DoAnV2.Domain.AssemblyInfoInputs.cache
 C:\code\DoAnV2\backend\DoAnV2.Domain\obj\Debug\net10.0\DoAnV2.Domain.AssemblyInfo.cs
 C:\code\DoAnV2\backend\DoAnV2.Domain\obj\Debug\net10.0\DoAnV2.Domain.csproj.CoreCompileInputs.cache
+C:\code\DoAnV2\backend\DoAnV2.Domain\obj\Debug\net10.0\DoAnV2.Domain.sourcelink.json
 C:\code\DoAnV2\backend\DoAnV2.Domain\obj\Debug\net10.0\DoAnV2.Domain.dll
 C:\code\DoAnV2\backend\DoAnV2.Domain\obj\Debug\net10.0\refint\DoAnV2.Domain.dll
 C:\code\DoAnV2\backend\DoAnV2.Domain\obj\Debug\net10.0\DoAnV2.Domain.pdb
 C:\code\DoAnV2\backend\DoAnV2.Domain\obj\Debug\net10.0\ref\DoAnV2.Domain.dll
-C:\code\DoAnV2\backend\DoAnV2.Domain\obj\Debug\net10.0\DoAnV2.Domain.sourcelink.json

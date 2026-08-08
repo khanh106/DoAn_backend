@@ -73,18 +73,6 @@
               "target": "Package",
               "version": "[12.4.0, )"
             },
-            "Microsoft.Extensions.DependencyInjection.Abstractions": {
-              "target": "Package",
-              "version": "[9.0.0, )"
-            },
-            "Microsoft.Extensions.Logging.Abstractions": {
-              "target": "Package",
-              "version": "[9.0.0, )"
-            },
-            "Microsoft.Extensions.Options": {
-              "target": "Package",
-              "version": "[9.0.0, )"
-            },
             "Microsoft.IdentityModel.Tokens": {
               "target": "Package",
               "version": "[8.0.2, )"

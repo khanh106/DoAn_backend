@@ -407,7 +407,7 @@ namespace DoAnV2.Infrastructure.Migrations
 
                     b.Property<string>("Code")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
+                        .HasColumnType("nvarchar(450)")
                         .HasColumnName("code");
 
                     b.Property<DateTime>("CreatedAt")
@@ -443,8 +443,9 @@ namespace DoAnV2.Infrastructure.Migrations
                     b.HasKey("Id")
                         .HasName("pk_fruit_types");
 
-                    b.HasIndex("ProcessorId")
-                        .HasDatabaseName("ix_fruit_types_processor_id");
+                    b.HasIndex("ProcessorId", "Code")
+                        .IsUnique()
+                        .HasDatabaseName("ix_fruit_types_processor_id_code");
 
                     b.ToTable("fruit_types", (string)null);
                 });
@@ -656,7 +657,7 @@ namespace DoAnV2.Infrastructure.Migrations
 
                     b.Property<string>("Code")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
+                        .HasColumnType("nvarchar(450)")
                         .HasColumnName("code");
 
                     b.Property<double?>("Concentration")
@@ -721,8 +722,9 @@ namespace DoAnV2.Infrastructure.Migrations
                     b.HasKey("Id")
                         .HasName("pk_material_items");
 
-                    b.HasIndex("ProcessorId")
-                        .HasDatabaseName("ix_material_items_processor_id");
+                    b.HasIndex("ProcessorId", "Code")
+                        .IsUnique()
+                        .HasDatabaseName("ix_material_items_processor_id_code");
 
                     b.ToTable("material_items", (string)null);
                 });
@@ -1112,7 +1114,7 @@ namespace DoAnV2.Infrastructure.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2026, 8, 7, 17, 54, 39, 210, DateTimeKind.Utc).AddTicks(2073),
+                            CreatedAt = new DateTime(2026, 8, 8, 15, 14, 46, 818, DateTimeKind.Utc).AddTicks(5878),
                             Description = "Quản trị hệ thống",
                             IsDeleted = false,
                             RoleName = "ADMIN"
@@ -1120,7 +1122,7 @@ namespace DoAnV2.Infrastructure.Migrations
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2026, 8, 7, 17, 54, 39, 210, DateTimeKind.Utc).AddTicks(3389),
+                            CreatedAt = new DateTime(2026, 8, 8, 15, 14, 46, 818, DateTimeKind.Utc).AddTicks(7217),
                             Description = "Nông dân / Công nhân",
                             IsDeleted = false,
                             RoleName = "FARMER"
@@ -1128,7 +1130,7 @@ namespace DoAnV2.Infrastructure.Migrations
                         new
                         {
                             Id = 3,
-                            CreatedAt = new DateTime(2026, 8, 7, 17, 54, 39, 210, DateTimeKind.Utc).AddTicks(3395),
+                            CreatedAt = new DateTime(2026, 8, 8, 15, 14, 46, 818, DateTimeKind.Utc).AddTicks(7235),
                             Description = "Hợp tác xã / Doanh nghiệp",
                             IsDeleted = false,
                             RoleName = "PROCESSOR"
@@ -1136,7 +1138,7 @@ namespace DoAnV2.Infrastructure.Migrations
                         new
                         {
                             Id = 4,
-                            CreatedAt = new DateTime(2026, 8, 7, 17, 54, 39, 210, DateTimeKind.Utc).AddTicks(3397),
+                            CreatedAt = new DateTime(2026, 8, 8, 15, 14, 46, 818, DateTimeKind.Utc).AddTicks(7237),
                             Description = "Cửa hàng bán lẻ",
                             IsDeleted = false,
                             RoleName = "RETAILER"
@@ -1373,11 +1375,11 @@ namespace DoAnV2.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("00000000-0000-0000-0000-000000000001"),
-                            CreatedAt = new DateTime(2026, 8, 7, 17, 54, 39, 505, DateTimeKind.Utc).AddTicks(8242),
+                            CreatedAt = new DateTime(2026, 8, 8, 15, 14, 47, 479, DateTimeKind.Utc).AddTicks(6235),
                             Email = "admin@gmail.com",
                             FullName = "System Administrator",
                             IsDeleted = false,
-                            PasswordHash = "$2a$11$7TV6jX8I6zdEUQF.nJvXxu4Yjin0aRevWzBn2pDZH6zkZRZrQk7TG",
+                            PasswordHash = "$2a$11$hdkYmO/TMpXwEbDPG.Dv5.qSiVXdi93cptZsaNsnd4y/r3VmekaX6",
                             Phone = "0000000000",
                             RoleId = 1,
                             Status = "APPROVED"
@@ -1505,7 +1507,7 @@ namespace DoAnV2.Infrastructure.Migrations
                     b.HasOne("DoAnV2.Domain.Entities.User", "Processor")
                         .WithMany()
                         .HasForeignKey("ProcessorId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_farm_areas_users_processor_id");
 
@@ -1517,7 +1519,7 @@ namespace DoAnV2.Infrastructure.Migrations
                     b.HasOne("DoAnV2.Domain.Entities.User", "Processor")
                         .WithMany()
                         .HasForeignKey("ProcessorId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_fruit_types_users_processor_id");
 
@@ -1588,7 +1590,7 @@ namespace DoAnV2.Infrastructure.Migrations
                     b.HasOne("DoAnV2.Domain.Entities.User", "Processor")
                         .WithMany()
                         .HasForeignKey("ProcessorId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_material_items_users_processor_id");
 
@@ -1641,7 +1643,7 @@ namespace DoAnV2.Infrastructure.Migrations
                     b.HasOne("DoAnV2.Domain.Entities.FruitType", "FruitType")
                         .WithMany("Products")
                         .HasForeignKey("FruitTypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_products_fruit_types_fruit_type_id");
 

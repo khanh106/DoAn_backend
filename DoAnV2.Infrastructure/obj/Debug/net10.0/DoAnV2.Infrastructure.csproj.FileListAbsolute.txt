@@ -11,10 +11,10 @@ C:\code\DoAnV2\backend\DoAnV2.Infrastructure\obj\Debug\net10.0\DoAnV2.Infrastruc
 C:\code\DoAnV2\backend\DoAnV2.Infrastructure\obj\Debug\net10.0\DoAnV2.Infrastructure.AssemblyInfoInputs.cache
 C:\code\DoAnV2\backend\DoAnV2.Infrastructure\obj\Debug\net10.0\DoAnV2.Infrastructure.AssemblyInfo.cs
 C:\code\DoAnV2\backend\DoAnV2.Infrastructure\obj\Debug\net10.0\DoAnV2.Infrastructure.csproj.CoreCompileInputs.cache
+C:\code\DoAnV2\backend\DoAnV2.Infrastructure\obj\Debug\net10.0\DoAnV2.Infrastructure.sourcelink.json
 C:\code\DoAnV2\backend\DoAnV2.Infrastructure\obj\Debug\net10.0\DoAnV2.I.BB49C88B.Up2Date
 C:\code\DoAnV2\backend\DoAnV2.Infrastructure\obj\Debug\net10.0\DoAnV2.Infrastructure.dll
 C:\code\DoAnV2\backend\DoAnV2.Infrastructure\obj\Debug\net10.0\refint\DoAnV2.Infrastructure.dll
 C:\code\DoAnV2\backend\DoAnV2.Infrastructure\obj\Debug\net10.0\DoAnV2.Infrastructure.pdb
 C:\code\DoAnV2\backend\DoAnV2.Infrastructure\obj\Debug\net10.0\DoAnV2.Infrastructure.genruntimeconfig.cache
 C:\code\DoAnV2\backend\DoAnV2.Infrastructure\obj\Debug\net10.0\ref\DoAnV2.Infrastructure.dll
-C:\code\DoAnV2\backend\DoAnV2.Infrastructure\obj\Debug\net10.0\DoAnV2.Infrastructure.sourcelink.json
