@@ -15,6 +15,8 @@ public interface IUnitOfWork
     IBatchWorkerRepository BatchWorkers { get; }
     ICultivationLogRepository CultivationLogs { get; }
     IHarvestRepository Harvests { get; }
+    IProcessingRepository Processings { get; }
+    ISubBatchRepository SubBatches { get; }
     Task<int> SaveChangesAsync(CancellationToken ct = default);
 }
 

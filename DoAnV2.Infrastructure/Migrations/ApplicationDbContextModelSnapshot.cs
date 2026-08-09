@@ -880,6 +880,10 @@ namespace DoAnV2.Infrastructure.Migrations
                         .HasColumnType("datetime2")
                         .HasColumnName("created_at");
 
+                    b.Property<string>("DataHash")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("data_hash");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)")
@@ -1114,7 +1118,7 @@ namespace DoAnV2.Infrastructure.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2026, 8, 8, 15, 14, 46, 818, DateTimeKind.Utc).AddTicks(5878),
+                            CreatedAt = new DateTime(2026, 8, 9, 0, 13, 9, 202, DateTimeKind.Utc).AddTicks(547),
                             Description = "Quản trị hệ thống",
                             IsDeleted = false,
                             RoleName = "ADMIN"
@@ -1122,7 +1126,7 @@ namespace DoAnV2.Infrastructure.Migrations
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2026, 8, 8, 15, 14, 46, 818, DateTimeKind.Utc).AddTicks(7217),
+                            CreatedAt = new DateTime(2026, 8, 9, 0, 13, 9, 202, DateTimeKind.Utc).AddTicks(3457),
                             Description = "Nông dân / Công nhân",
                             IsDeleted = false,
                             RoleName = "FARMER"
@@ -1130,7 +1134,7 @@ namespace DoAnV2.Infrastructure.Migrations
                         new
                         {
                             Id = 3,
-                            CreatedAt = new DateTime(2026, 8, 8, 15, 14, 46, 818, DateTimeKind.Utc).AddTicks(7235),
+                            CreatedAt = new DateTime(2026, 8, 9, 0, 13, 9, 202, DateTimeKind.Utc).AddTicks(3462),
                             Description = "Hợp tác xã / Doanh nghiệp",
                             IsDeleted = false,
                             RoleName = "PROCESSOR"
@@ -1138,7 +1142,7 @@ namespace DoAnV2.Infrastructure.Migrations
                         new
                         {
                             Id = 4,
-                            CreatedAt = new DateTime(2026, 8, 8, 15, 14, 46, 818, DateTimeKind.Utc).AddTicks(7237),
+                            CreatedAt = new DateTime(2026, 8, 9, 0, 13, 9, 202, DateTimeKind.Utc).AddTicks(3465),
                             Description = "Cửa hàng bán lẻ",
                             IsDeleted = false,
                             RoleName = "RETAILER"
@@ -1375,11 +1379,11 @@ namespace DoAnV2.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("00000000-0000-0000-0000-000000000001"),
-                            CreatedAt = new DateTime(2026, 8, 8, 15, 14, 47, 479, DateTimeKind.Utc).AddTicks(6235),
+                            CreatedAt = new DateTime(2026, 8, 9, 0, 13, 9, 847, DateTimeKind.Utc).AddTicks(143),
                             Email = "admin@gmail.com",
                             FullName = "System Administrator",
                             IsDeleted = false,
-                            PasswordHash = "$2a$11$hdkYmO/TMpXwEbDPG.Dv5.qSiVXdi93cptZsaNsnd4y/r3VmekaX6",
+                            PasswordHash = "$2a$11$noccDtIJjN7Ag8cA94DOfuzQXeKS5oVvzrYzTDcvYTUMFaAO0AW.y",
                             Phone = "0000000000",
                             RoleId = 1,
                             Status = "APPROVED"

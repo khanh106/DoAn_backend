@@ -33,6 +33,8 @@ public static class DependencyInjection
         services.AddScoped<IBatchWorkerRepository, BatchWorkerRepository>();
         services.AddScoped<ICultivationLogRepository, CultivationLogRepository>();
         services.AddScoped<IHarvestRepository, HarvestRepository>();
+        services.AddScoped<IProcessingRepository, ProcessingRepository>();
+        services.AddScoped<ISubBatchRepository, SubBatchRepository>();
 
         // ============ Auth / Wallet / JWT ============
         services.AddScoped<IPasswordHasher, PasswordHasher>();

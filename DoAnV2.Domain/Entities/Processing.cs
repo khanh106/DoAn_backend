@@ -14,5 +14,6 @@ public class Processing : BaseEntity
     public DateTime? EndDate { get; set; }
 
     public string? MetadataURI { get; set; }
+    public string? DataHash { get; set; }
     public string ImageUrlsJson { get; set; } = "[]";
 }
