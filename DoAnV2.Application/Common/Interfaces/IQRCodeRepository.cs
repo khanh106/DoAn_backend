@@ -18,4 +18,10 @@ public interface IQRCodeRepository
         QRTargetType targetType, Guid targetId, CancellationToken ct = default);
 
     Task AddAsync(QRCode entity, CancellationToken ct = default);
+
+    /// <summary>
+    /// TASK 10 - Mục 10.1: Tìm QRCode theo chuỗi QRValue (URL truy xuất công khai).
+    /// Dùng để resolve code từ QR scan về target (BATCH/SUBBATCH/BOX/COMMERCIAL).
+    /// </summary>
+    Task<QRCode?> GetByQRValueAsync(string qrValue, CancellationToken ct = default);
 }

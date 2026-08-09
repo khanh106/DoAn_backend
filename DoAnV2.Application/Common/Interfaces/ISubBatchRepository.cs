@@ -18,6 +18,13 @@ public interface ISubBatchRepository
 
     Task AddAsync(SubBatch entity, CancellationToken ct = default);
 
-    /// <summary>Đánh dấu entity đã thay đổi - dùng cho EF Core change tracking.</summary>
+    /// <summary>
+    /// TASK 10 - Mục 10.1: Lấy SubBatch kèm các Navigation cần thiết cho truy xuất công khai.
+    /// Bao gồm: ParentBatch, Inspections, Packagings, Shipments (kèm Retailer).
+    /// </summary>
+    Task<SubBatch?> GetByIdWithDetailsAsync(Guid id, CancellationToken ct = default);
+
+    /// <summary>
+    /// TASK 10 - Mục 10.1: Đánh dấu entity đã thay đổi - dùng cho EF Core change tracking.</summary>
     void Update(SubBatch entity);
 }

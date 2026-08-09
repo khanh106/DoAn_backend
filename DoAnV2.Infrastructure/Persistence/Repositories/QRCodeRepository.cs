@@ -37,4 +37,7 @@ public class QRCodeRepository : IQRCodeRepository
 
     public async Task AddAsync(QRCode entity, CancellationToken ct = default)
         => await _db.QRCodes.AddAsync(entity, ct);
+
+    public Task<QRCode?> GetByQRValueAsync(string qrValue, CancellationToken ct = default)
+        => _db.QRCodes.FirstOrDefaultAsync(x => x.QRValue == qrValue, ct);
 }

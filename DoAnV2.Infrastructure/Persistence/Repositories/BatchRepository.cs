@@ -32,6 +32,26 @@ public class BatchRepository : IBatchRepository
     public Task<bool> BatchCodeExistsAsync(string batchCode, CancellationToken ct = default)
         => _db.Batches.AnyAsync(x => x.BatchCode == batchCode, ct);
 
+    public Task<Batch?> GetByIdWithFullChainAsync(Guid id, CancellationToken ct = default)
+        => _db.Batches
+            .Include(x => x.BatchWorkers).ThenInclude(w => w.User)
+            .Include(x => x.FruitType)
+            .Include(x => x.Product)
+            .Include(x => x.FarmArea)
+            .Include(x => x.RepresentativeWorker)
+            .Include(x => x.Processor)
+            .Include(x => x.CultivationLogs)
+                .ThenInclude(c => c.User)
+            .Include(x => x.Harvests)
+                .ThenInclude(h => h.RepresentativeUser)
+            .Include(x => x.Processings)
+            .Include(x => x.SubBatches)
+            .Include(x => x.Inspections)
+            .Include(x => x.Packagings)
+            .Include(x => x.Shipments)
+                .ThenInclude(s => s.Retailer)
+            .FirstOrDefaultAsync(x => x.Id == id, ct);
+
     public async Task AddAsync(Batch entity, CancellationToken ct = default)
         => await _db.Batches.AddAsync(entity, ct);
 

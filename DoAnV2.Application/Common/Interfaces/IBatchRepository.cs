@@ -14,6 +14,12 @@ public interface IBatchRepository
 
     Task<bool> BatchCodeExistsAsync(string batchCode, CancellationToken ct = default);
 
+    /// <summary>
+    /// TASK 10 - Mục 10.1: Lấy Batch kèm đầy đủ thông tin cho truy xuất công khai:
+    /// Workers, FruitType, Product, FarmArea, RepresentativeWorker, Processor.
+    /// </summary>
+    Task<Batch?> GetByIdWithFullChainAsync(Guid id, CancellationToken ct = default);
+
     Task AddAsync(Batch entity, CancellationToken ct = default);
 
     void Update(Batch entity);

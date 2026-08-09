@@ -36,6 +36,31 @@ public class SubBatchRepository : ISubBatchRepository
             .ToListAsync(ct);
     }
 
+    public Task<SubBatch?> GetByIdWithDetailsAsync(Guid id, CancellationToken ct = default)
+        => _db.SubBatches
+            .Include(x => x.ParentBatch)
+                .ThenInclude(pb => pb.FarmArea)
+            .Include(x => x.ParentBatch)
+                .ThenInclude(pb => pb.FruitType)
+            .Include(x => x.ParentBatch)
+                .ThenInclude(pb => pb.Product)
+            .Include(x => x.ParentBatch)
+                .ThenInclude(pb => pb.BatchWorkers)
+                    .ThenInclude(bw => bw.User)
+            .Include(x => x.ParentBatch)
+                .ThenInclude(pb => pb.RepresentativeWorker)
+            .Include(x => x.ParentBatch)
+                .ThenInclude(pb => pb.CultivationLogs)
+            .Include(x => x.ParentBatch)
+                .ThenInclude(pb => pb.Harvests)
+            .Include(x => x.ParentBatch)
+                .ThenInclude(pb => pb.Processings)
+            .Include(x => x.Inspections)
+            .Include(x => x.Packagings)
+            .Include(x => x.Shipments)
+                .ThenInclude(s => s.Retailer)
+            .FirstOrDefaultAsync(x => x.Id == id, ct);
+
     public async Task AddAsync(SubBatch entity, CancellationToken ct = default)
         => await _db.SubBatches.AddAsync(entity, ct);
 
