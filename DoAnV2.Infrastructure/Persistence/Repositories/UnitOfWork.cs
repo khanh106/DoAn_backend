@@ -21,7 +21,10 @@ public class UnitOfWork : IUnitOfWork
         ICultivationLogRepository cultivationLogs,
         IHarvestRepository harvests,
         IProcessingRepository processings,
-        ISubBatchRepository subBatches)
+        ISubBatchRepository subBatches,
+        IInspectionRepository inspections,
+        IPackagingRepository packagings,
+        IQRCodeRepository qrCodes)
     {
         _db = db;
         Users = users;
@@ -37,6 +40,9 @@ public class UnitOfWork : IUnitOfWork
         Harvests = harvests;
         Processings = processings;
         SubBatches = subBatches;
+        Inspections = inspections;
+        Packagings = packagings;
+        QRCodes = qrCodes;
     }
 
     public IUserRepository Users { get; }
@@ -52,6 +58,9 @@ public class UnitOfWork : IUnitOfWork
     public IHarvestRepository Harvests { get; }
     public IProcessingRepository Processings { get; }
     public ISubBatchRepository SubBatches { get; }
+    public IInspectionRepository Inspections { get; }
+    public IPackagingRepository Packagings { get; }
+    public IQRCodeRepository QRCodes { get; }
 
     public Task<int> SaveChangesAsync(CancellationToken ct = default)
         => _db.SaveChangesAsync(ct);

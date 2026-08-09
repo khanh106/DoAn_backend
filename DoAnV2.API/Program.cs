@@ -20,6 +20,7 @@ builder.Services.Configure<BlockchainOptions>(builder.Configuration.GetSection(B
 builder.Services.Configure<IpfsOptions>(builder.Configuration.GetSection(IpfsOptions.SectionName));
 builder.Services.Configure<WalletOptions>(builder.Configuration.GetSection(WalletOptions.SectionName));
 builder.Services.Configure<WalletFundingOptions>(builder.Configuration.GetSection(WalletFundingOptions.SectionName));
+builder.Services.Configure<TraceOptions>(builder.Configuration.GetSection(TraceOptions.SectionName));
 
 // ========== DbContext ==========
 var connectionString = builder.Configuration.GetConnectionString("Default");

@@ -35,6 +35,9 @@ public static class DependencyInjection
         services.AddScoped<IHarvestRepository, HarvestRepository>();
         services.AddScoped<IProcessingRepository, ProcessingRepository>();
         services.AddScoped<ISubBatchRepository, SubBatchRepository>();
+        services.AddScoped<IInspectionRepository, InspectionRepository>();
+        services.AddScoped<IPackagingRepository, PackagingRepository>();
+        services.AddScoped<IQRCodeRepository, QRCodeRepository>();
 
         // ============ Auth / Wallet / JWT ============
         services.AddScoped<IPasswordHasher, PasswordHasher>();
@@ -75,6 +78,9 @@ public static class DependencyInjection
         services.AddScoped<IRecordBlockchainTransactionService, BlockchainTransactionRecorder>();
         services.AddScoped<IBlockchainService, BlockchainService>();
         services.AddScoped<IRoleOnChainAssigner, BlockchainRoleAssigner>();
+
+        // ============ QR Code Generator (TASK 08 - Mục 8.3) ============
+        services.AddSingleton<IQrCodeGeneratorService, QrCodeGeneratorService>();
 
         // ============ Current user from HttpContext (JWT claims) ============
         services.AddHttpContextAccessor();

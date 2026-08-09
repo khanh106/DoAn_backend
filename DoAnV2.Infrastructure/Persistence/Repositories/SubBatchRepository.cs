@@ -38,4 +38,6 @@ public class SubBatchRepository : ISubBatchRepository
 
     public async Task AddAsync(SubBatch entity, CancellationToken ct = default)
         => await _db.SubBatches.AddAsync(entity, ct);
+
+    public void Update(SubBatch entity) => _db.SubBatches.Update(entity);
 }

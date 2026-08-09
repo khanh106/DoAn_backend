@@ -17,4 +17,7 @@ public interface ISubBatchRepository
         Guid parentBatchId, CancellationToken ct = default);
 
     Task AddAsync(SubBatch entity, CancellationToken ct = default);
+
+    /// <summary>Đánh dấu entity đã thay đổi - dùng cho EF Core change tracking.</summary>
+    void Update(SubBatch entity);
 }

@@ -17,6 +17,9 @@ public interface IUnitOfWork
     IHarvestRepository Harvests { get; }
     IProcessingRepository Processings { get; }
     ISubBatchRepository SubBatches { get; }
+    IInspectionRepository Inspections { get; }
+    IPackagingRepository Packagings { get; }
+    IQRCodeRepository QRCodes { get; }
     Task<int> SaveChangesAsync(CancellationToken ct = default);
 }
 
