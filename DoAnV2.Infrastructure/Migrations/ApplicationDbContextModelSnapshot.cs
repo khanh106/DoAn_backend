@@ -1118,7 +1118,7 @@ namespace DoAnV2.Infrastructure.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2026, 8, 9, 0, 13, 9, 202, DateTimeKind.Utc).AddTicks(547),
+                            CreatedAt = new DateTime(2026, 8, 9, 11, 18, 26, 489, DateTimeKind.Utc).AddTicks(236),
                             Description = "Quản trị hệ thống",
                             IsDeleted = false,
                             RoleName = "ADMIN"
@@ -1126,7 +1126,7 @@ namespace DoAnV2.Infrastructure.Migrations
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2026, 8, 9, 0, 13, 9, 202, DateTimeKind.Utc).AddTicks(3457),
+                            CreatedAt = new DateTime(2026, 8, 9, 11, 18, 26, 489, DateTimeKind.Utc).AddTicks(2104),
                             Description = "Nông dân / Công nhân",
                             IsDeleted = false,
                             RoleName = "FARMER"
@@ -1134,7 +1134,7 @@ namespace DoAnV2.Infrastructure.Migrations
                         new
                         {
                             Id = 3,
-                            CreatedAt = new DateTime(2026, 8, 9, 0, 13, 9, 202, DateTimeKind.Utc).AddTicks(3462),
+                            CreatedAt = new DateTime(2026, 8, 9, 11, 18, 26, 489, DateTimeKind.Utc).AddTicks(2110),
                             Description = "Hợp tác xã / Doanh nghiệp",
                             IsDeleted = false,
                             RoleName = "PROCESSOR"
@@ -1142,7 +1142,7 @@ namespace DoAnV2.Infrastructure.Migrations
                         new
                         {
                             Id = 4,
-                            CreatedAt = new DateTime(2026, 8, 9, 0, 13, 9, 202, DateTimeKind.Utc).AddTicks(3465),
+                            CreatedAt = new DateTime(2026, 8, 9, 11, 18, 26, 489, DateTimeKind.Utc).AddTicks(2113),
                             Description = "Cửa hàng bán lẻ",
                             IsDeleted = false,
                             RoleName = "RETAILER"
@@ -1174,6 +1174,10 @@ namespace DoAnV2.Infrastructure.Migrations
                         .HasColumnType("datetime2")
                         .HasColumnName("created_at");
 
+                    b.Property<string>("DataHash")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("data_hash");
+
                     b.Property<string>("Destination")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)")
@@ -1187,10 +1191,42 @@ namespace DoAnV2.Infrastructure.Migrations
                         .HasColumnType("bit")
                         .HasColumnName("is_deleted");
 
+                    b.Property<string>("MetadataURI")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("metadata_uri");
+
                     b.Property<string>("PickupLocation")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("pickup_location");
+
+                    b.Property<string>("ReadyDataHash")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("ready_data_hash");
+
+                    b.Property<DateTime?>("ReadyForSaleDate")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ready_for_sale_date");
+
+                    b.Property<string>("ReadyMetadataURI")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("ready_metadata_uri");
+
+                    b.Property<string>("ReadyTransactionHash")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("ready_transaction_hash");
+
+                    b.Property<string>("ReceiveDataHash")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("receive_data_hash");
+
+                    b.Property<string>("ReceiveMetadataURI")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("receive_metadata_uri");
+
+                    b.Property<string>("ReceiveTransactionHash")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("receive_transaction_hash");
 
                     b.Property<DateTime?>("ReceivedDate")
                         .HasColumnType("datetime2")
@@ -1199,6 +1235,10 @@ namespace DoAnV2.Infrastructure.Migrations
                     b.Property<Guid>("RetailerId")
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("retailer_id");
+
+                    b.Property<string>("ShipTransactionHash")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("ship_transaction_hash");
 
                     b.Property<string>("ShippingCode")
                         .IsRequired()
@@ -1379,11 +1419,11 @@ namespace DoAnV2.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("00000000-0000-0000-0000-000000000001"),
-                            CreatedAt = new DateTime(2026, 8, 9, 0, 13, 9, 847, DateTimeKind.Utc).AddTicks(143),
+                            CreatedAt = new DateTime(2026, 8, 9, 11, 18, 27, 176, DateTimeKind.Utc).AddTicks(4525),
                             Email = "admin@gmail.com",
                             FullName = "System Administrator",
                             IsDeleted = false,
-                            PasswordHash = "$2a$11$noccDtIJjN7Ag8cA94DOfuzQXeKS5oVvzrYzTDcvYTUMFaAO0AW.y",
+                            PasswordHash = "$2a$11$VSKjT1g.fZCbhdFLRj555.WDfeFM.QuOwb7lIQzN5sjGLL/aVJK8u",
                             Phone = "0000000000",
                             RoleId = 1,
                             Status = "APPROVED"

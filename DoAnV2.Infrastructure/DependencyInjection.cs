@@ -37,6 +37,7 @@ public static class DependencyInjection
         services.AddScoped<ISubBatchRepository, SubBatchRepository>();
         services.AddScoped<IInspectionRepository, InspectionRepository>();
         services.AddScoped<IPackagingRepository, PackagingRepository>();
+        services.AddScoped<IShipmentRepository, ShipmentRepository>();
         services.AddScoped<IQRCodeRepository, QRCodeRepository>();
 
         // ============ Auth / Wallet / JWT ============

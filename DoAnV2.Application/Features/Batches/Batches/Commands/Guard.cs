@@ -32,4 +32,20 @@ internal static class Guard
 
         return current.UserId.Value;
     }
+
+    /// <summary>
+    /// Helper ép user hiện tại phải là RETAILER (APPROVED) - TASK 09.
+    /// Trả về Guid RetailerId (= UserId).
+    /// </summary>
+    public static Guid RequireRetailer(ICurrentUser current)
+    {
+        if (!current.IsAuthenticated || current.UserId is null)
+            throw new UnauthorizedException("Người dùng chưa đăng nhập.");
+
+        var role = current.Role;
+        if (!string.Equals(role, "RETAILER", StringComparison.OrdinalIgnoreCase))
+            throw new ForbiddenException("Chỉ tài khoản RETAILER mới được phép thao tác.");
+
+        return current.UserId.Value;
+    }
 }

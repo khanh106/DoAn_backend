@@ -19,6 +19,7 @@ public interface IUnitOfWork
     ISubBatchRepository SubBatches { get; }
     IInspectionRepository Inspections { get; }
     IPackagingRepository Packagings { get; }
+    IShipmentRepository Shipments { get; }
     IQRCodeRepository QRCodes { get; }
     Task<int> SaveChangesAsync(CancellationToken ct = default);
 }

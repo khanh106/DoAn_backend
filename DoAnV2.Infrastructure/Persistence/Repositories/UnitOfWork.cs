@@ -24,6 +24,7 @@ public class UnitOfWork : IUnitOfWork
         ISubBatchRepository subBatches,
         IInspectionRepository inspections,
         IPackagingRepository packagings,
+        IShipmentRepository shipments,
         IQRCodeRepository qrCodes)
     {
         _db = db;
@@ -42,6 +43,7 @@ public class UnitOfWork : IUnitOfWork
         SubBatches = subBatches;
         Inspections = inspections;
         Packagings = packagings;
+        Shipments = shipments;
         QRCodes = qrCodes;
     }
 
@@ -60,6 +62,7 @@ public class UnitOfWork : IUnitOfWork
     public ISubBatchRepository SubBatches { get; }
     public IInspectionRepository Inspections { get; }
     public IPackagingRepository Packagings { get; }
+    public IShipmentRepository Shipments { get; }
     public IQRCodeRepository QRCodes { get; }
 
     public Task<int> SaveChangesAsync(CancellationToken ct = default)

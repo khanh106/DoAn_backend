@@ -26,5 +26,23 @@ public class Shipment : BaseEntity
     public DateTime ShippingDate { get; set; }
     public DateTime? ExpectedDate { get; set; }
     public DateTime? ReceivedDate { get; set; }
+    public DateTime? ReadyForSaleDate { get; set; }
     public double Weight { get; set; }
+
+    // ===== IPFS + Blockchain metadata cho từng giai đoạn =====
+
+    /// <summary>MetadataURI upload khi Processor gọi shipParent / shipSub (TASK 09 - Mục 9.1).</summary>
+    public string? MetadataURI { get; set; }
+    public string? DataHash { get; set; }
+    public string? ShipTransactionHash { get; set; }
+
+    /// <summary>MetadataURI upload khi Retailer gọi receiveParent / receiveSub (TASK 09 - Mục 9.2).</summary>
+    public string? ReceiveMetadataURI { get; set; }
+    public string? ReceiveDataHash { get; set; }
+    public string? ReceiveTransactionHash { get; set; }
+
+    /// <summary>MetadataURI upload khi Retailer gọi readyParent / readySub (TASK 09 - Mục 9.2).</summary>
+    public string? ReadyMetadataURI { get; set; }
+    public string? ReadyDataHash { get; set; }
+    public string? ReadyTransactionHash { get; set; }
 }
