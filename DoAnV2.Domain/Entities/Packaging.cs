@@ -25,4 +25,8 @@ public class Packaging : BaseEntity
     public string? Standard { get; set; }
     public string ImageUrlsJson { get; set; } = "[]";
     public string? Note { get; set; }
+
+    // ===== TASK 11: Lưu metadata IPFS để phục vụ Retry (BR-42) =====
+    public string? MetadataURI { get; set; }
+    public string? DataHash { get; set; }
 }

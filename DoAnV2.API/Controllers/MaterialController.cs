@@ -49,4 +49,12 @@ public class MaterialController : ControllerBase
         var result = await _mediator.Send(cmd, ct);
         return Ok(result);
     }
+
+    /// <summary>DELETE /api/v1/processor/materials/{id} - Xóa vật tư/sản phẩm khỏi kho.</summary>
+    [HttpDelete("{id:guid}")]
+    public async Task<ActionResult> Delete([FromRoute] Guid id, CancellationToken ct)
+    {
+        await _mediator.Send(new DeleteMaterialCommand(id), ct);
+        return NoContent();
+    }
 }

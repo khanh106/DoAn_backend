@@ -38,6 +38,7 @@ public class InspectionController : ControllerBase
     /// </summary>
     [HttpPost("api/v1/processor/inspections/parent/{batchId:guid}")]
     [Consumes("multipart/form-data")]
+    [ApiExplorerSettings(IgnoreApi = true)]
     public async Task<ActionResult<InspectionResponseDto>> InspectParent(
         [FromRoute] Guid batchId,
         [FromForm] string DocumentName,
@@ -69,6 +70,7 @@ public class InspectionController : ControllerBase
     /// </summary>
     [HttpPost("api/v1/processor/inspections/sub/{subBatchId:guid}")]
     [Consumes("multipart/form-data")]
+    [ApiExplorerSettings(IgnoreApi = true)]
     public async Task<ActionResult<InspectionResponseDto>> InspectSub(
         [FromRoute] Guid subBatchId,
         [FromForm] string DocumentName,

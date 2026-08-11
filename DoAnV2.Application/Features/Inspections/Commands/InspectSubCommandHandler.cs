@@ -1,11 +1,13 @@
 using DoAnV2.Application.Common.Exceptions;
 using DoAnV2.Application.Common.Interfaces;
+using DoAnV2.Application.Common.Options;
 using DoAnV2.Application.Features.Batches.Batches.Commands;
 using DoAnV2.Application.Features.Inspections.Dtos;
 using DoAnV2.Domain.Entities;
 using DoAnV2.Domain.Enums;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace DoAnV2.Application.Features.Inspections.Commands;
 
@@ -25,6 +27,8 @@ public class InspectSubCommandHandler
     private readonly ICurrentUser _currentUser;
     private readonly IIpfsService _ipfs;
     private readonly IBlockchainService _blockchain;
+    private readonly IWalletService _walletService;
+    private readonly WalletOptions _walletOptions;
     private readonly ILogger<InspectSubCommandHandler> _logger;
 
     public InspectSubCommandHandler(
@@ -32,12 +36,16 @@ public class InspectSubCommandHandler
         ICurrentUser currentUser,
         IIpfsService ipfs,
         IBlockchainService blockchain,
+        IWalletService walletService,
+        IOptions<WalletOptions> walletOptions,
         ILogger<InspectSubCommandHandler> logger)
     {
         _uow = uow;
         _currentUser = currentUser;
         _ipfs = ipfs;
         _blockchain = blockchain;
+        _walletService = walletService;
+        _walletOptions = walletOptions.Value;
         _logger = logger;
     }
 
@@ -105,6 +113,17 @@ public class InspectSubCommandHandler
             fileName: $"inspect-sub-{subBatch.SubBatchCode}-{now:yyyyMMddHHmmss}.json",
             ct: ct);
 
+        // ========== 4.5. Lấy và giải mã Private Key của ví Processor ==========
+        var processorUser = await _uow.Users.GetByIdAsync(processorId, ct)
+            ?? throw new NotFoundException($"Không tìm thấy thông tin tài khoản Processor {processorId}.");
+
+        string? signerPrivateKey = null;
+        if (!string.IsNullOrWhiteSpace(processorUser.EncryptedPrivateKey))
+        {
+            signerPrivateKey = _walletService.DecryptPrivateKey(
+                processorUser.EncryptedPrivateKey, _walletOptions.EncryptionKey);
+        }
+
         // ========== 5. Gọi SC: inspectSub(subBatchId, passed, metadataURI, dataHash) ==========
         string txHash;
         try
@@ -114,6 +133,7 @@ public class InspectSubCommandHandler
                 passed: resultEnum == InspectionResult.PASSED,
                 metadataURI: metadataURI,
                 dataHash: dataHash,
+                signerPrivateKey: signerPrivateKey,
                 ct: ct);
         }
         catch (Exception ex)
@@ -135,6 +155,9 @@ public class InspectSubCommandHandler
             Result = resultEnum,
             FileURI = fileURI,
             Note = req.Note?.Trim(),
+            // TASK 11: Lưu metadataURI/DataHash để phục vụ Retry (BR-42)
+            MetadataURI = metadataURI,
+            DataHash = dataHash,
         };
         await _uow.Inspections.AddAsync(inspection, ct);
 

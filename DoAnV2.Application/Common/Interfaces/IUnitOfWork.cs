@@ -4,6 +4,7 @@ namespace DoAnV2.Application.Common.Interfaces;
 
 public interface IUnitOfWork
 {
+    IProcessorWorkerRepository ProcessorWorkers { get; }
     IUserRepository Users { get; }
     IBlockchainTransactionRepository BlockchainTransactions { get; }
     IFruitTypeRepository FruitTypes { get; }
@@ -21,6 +22,7 @@ public interface IUnitOfWork
     IPackagingRepository Packagings { get; }
     IShipmentRepository Shipments { get; }
     IQRCodeRepository QRCodes { get; }
+    IDistributorRepository Distributors { get; }
     Task<int> SaveChangesAsync(CancellationToken ct = default);
 }
 
@@ -29,9 +31,31 @@ public interface IUserRepository
     Task<User?> GetByEmailAsync(string email, CancellationToken ct = default);
     Task<User?> GetByIdAsync(Guid id, CancellationToken ct = default);
     Task<IReadOnlyList<User>> GetPendingUsersAsync(CancellationToken ct = default);
+    Task<IReadOnlyList<User>> GetAllUsersAsync(CancellationToken ct = default); 
     Task<bool> EmailExistsAsync(string email, CancellationToken ct = default);
     Task AddAsync(User user, CancellationToken ct = default);
 
     /// <summary>Lookup nhiều user theo danh sách Guid - dùng để validate assignedWorkerIds.</summary>
     Task<IReadOnlyList<User>> GetByIdsAsync(IEnumerable<Guid> ids, CancellationToken ct = default);
+
+    /// <summary>Tìm kiếm Farmer đã APPROVED theo từ khóa.</summary>
+    Task<IReadOnlyList<User>> SearchFarmersAsync(string? keyword, CancellationToken ct = default);
+
+    /// <summary>Tìm kiếm Retailer (Cửa hàng / Siêu thị) đã APPROVED theo từ khóa.</summary>
+    Task<IReadOnlyList<User>> SearchRetailersAsync(string? keyword, CancellationToken ct = default);
+
+    /// <summary>
+    /// TASK 11 - Mục 11.1: Thống kê user theo Role + Status - dùng cho Dashboard Admin.
+    /// Trả về (total, farmers, processors, retailers, active, pending, locked).
+    /// </summary>
+    Task<UserStats> GetStatsAsync(CancellationToken ct = default);
 }
+
+public record UserStats(
+    int Total,
+    int Farmers,
+    int Processors,
+    int Retailers,
+    int Active,
+    int Pending,
+    int Locked);

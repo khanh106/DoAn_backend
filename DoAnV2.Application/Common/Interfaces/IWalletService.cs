@@ -14,6 +14,9 @@ public interface IWalletService
     /// <summary>Sinh cặp key Bitcoin mới, trả về (PublicAddress, EncryptedPrivateKey).</summary>
     (string WalletAddress, string EncryptedPrivateKey) GenerateBitcoinWallet(string encryptionKey);
 
+    /// <summary>Mã hóa Private Key bằng AES-256 trước khi lưu DB.</summary>
+    string EncryptPrivateKey(string plainPrivateKey, string encryptionKey);
+
     /// <summary>Giải mã EncryptedPrivateKey (chỉ dùng nội bộ khi ký giao dịch).</summary>
     string DecryptPrivateKey(string encryptedPrivateKey, string encryptionKey);
 }

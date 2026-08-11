@@ -9,7 +9,8 @@ public record RegisterCommand(
     string Email,
     string Phone,
     string Password,
-    DoAnV2.Domain.Enums.RoleType RoleRequested) : IRequest<AuthResponse>;
+    DoAnV2.Domain.Enums.RoleType RoleRequested,
+    string? WalletAddress = null) : IRequest<AuthResponse>;
 
 
 public record LoginCommand(string Email, string Password) : IRequest<AuthResponse>;
@@ -36,3 +37,14 @@ public record GetMyProfileQuery : IRequest<ProfileResponse>;
 
 // ===== Admin: Get pending list =====
 public record GetPendingUsersQuery : IRequest<IReadOnlyList<PendingUserDto>>;
+
+// ===== Admin: Get all users =====
+public record GetAllUsersQuery : IRequest<IReadOnlyList<UserAccountDto>>;
+// ===== Admin: Get user detail =====
+public record GetUserDetailQuery(Guid UserId) : IRequest<UserDetailDto>;
+// ===== Admin: Change User Role =====
+public record ChangeUserRoleCommand(Guid UserId, DoAnV2.Domain.Enums.RoleType NewRole) : IRequest<UserAccountDto>;
+// ===== Authenticated: HTX Profile =====
+public record GetCooperativeProfileQuery() : IRequest<CooperativeProfileDto?>;
+public record UpdateCooperativeProfileCommand(CooperativeProfileDto Profile) : IRequest<bool>;
+public record UpdateWalletAddressCommand(string WalletAddress, string? PrivateKey = null) : IRequest<bool>;

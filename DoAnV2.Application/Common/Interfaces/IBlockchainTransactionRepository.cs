@@ -1,4 +1,5 @@
 using DoAnV2.Domain.Entities;
+using DoAnV2.Domain.Enums;
 
 namespace DoAnV2.Application.Common.Interfaces;
 
@@ -20,4 +21,26 @@ public interface IBlockchainTransactionRepository
     /// </summary>
     Task<IReadOnlyList<BlockchainTransaction>> GetHistoryForSubBatchAsync(
         Guid subBatchId, CancellationToken ct = default);
+
+    /// <summary>
+    /// TASK 11 - Mục 11.2: Lấy 1 record giao dịch theo Id (kèm Batch/SubBatch để kiểm tra dữ liệu off-chain).
+    /// Dùng cho luồng Retry.
+    /// </summary>
+    Task<BlockchainTransaction?> GetByIdAsync(Guid id, CancellationToken ct = default);
+
+    /// <summary>
+    /// TASK 11 - Mục 11.2: Danh sách giao dịch Blockchain phục vụ trang giám sát của Admin.
+    /// Hỗ trợ filter theo Status (FAILED/PENDING/SUCCESS), FunctionName, BatchId.
+    /// Sắp xếp theo Timestamp giảm dần (mới nhất trước).
+    /// </summary>
+    Task<IReadOnlyList<BlockchainTransaction>> SearchAsync(
+        TransactionStatus? status,
+        string? functionName,
+        Guid? batchId,
+        CancellationToken ct = default);
+
+    /// <summary>
+    /// TASK 11 - Mục 11.1: Thống kê số lượng giao dịch theo trạng thái - dùng cho Dashboard.
+    /// </summary>
+    Task<(int Total, int Success, int Failed)> CountByStatusAsync(CancellationToken ct = default);
 }

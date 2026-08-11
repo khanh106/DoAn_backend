@@ -34,7 +34,7 @@ public class WalletService : IWalletService
         var key = new EthECKey(privateKeyHex);
         var address = key.GetPublicAddress();      // "0x..." lowercase checksummed
 
-        return (address, EncryptPrivateKey(privateKeyHex, encryptionKey));
+        return (address, EncryptPrivateKeyInternal(privateKeyHex, encryptionKey));
     }
 
     public (string WalletAddress, string EncryptedPrivateKey) GenerateBitcoinWallet(string encryptionKey)
@@ -43,14 +43,17 @@ public class WalletService : IWalletService
         var wif = key.GetWif(_walletOptions.CustodialMode ? Network.Main : Network.TestNet).ToWif();
         var address = key.GetAddress(ScriptPubKeyType.Legacy, _walletOptions.CustodialMode ? Network.Main : Network.TestNet).ToString();
 
-        return (address, EncryptPrivateKey(wif, encryptionKey));
+        return (address, EncryptPrivateKeyInternal(wif, encryptionKey));
     }
+
+    public string EncryptPrivateKey(string plainPrivateKey, string encryptionKey)
+        => EncryptPrivateKeyInternal(plainPrivateKey, encryptionKey);
 
     public string DecryptPrivateKey(string encryptedPrivateKey, string encryptionKey)
         => DecryptPrivateKeyInternal(encryptedPrivateKey, encryptionKey);
 
     // ===================== AES-256-CBC =====================
-    private static string EncryptPrivateKey(string plaintext, string passphrase)
+    private static string EncryptPrivateKeyInternal(string plaintext, string passphrase)
     {
         using var aes = Aes.Create();
         aes.Key = DeriveKey(passphrase, 32);

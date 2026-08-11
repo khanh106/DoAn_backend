@@ -25,6 +25,23 @@ public class UserController : ControllerBase
         var result = await _mediator.Send(new GetMyProfileQuery(), ct);
         return Ok(result);
     }
+    /// <summary>GET /api/v1/users - Admin lấy danh sách TẤT CẢ user.</summary>
+    [HttpGet]
+    [Authorize(Policy = "RequireAdmin")]
+    public async Task<ActionResult<IReadOnlyList<UserAccountDto>>> GetAll(CancellationToken ct)
+    {
+        var result = await _mediator.Send(new GetAllUsersQuery(), ct);
+        return Ok(result);
+    }
+
+    /// <summary>GET /api/v1/users/{id:guid} - Admin xem thông tin chi tiết của tài khoản.</summary>
+    [HttpGet("{id:guid}")]
+    [Authorize(Policy = "RequireAdmin")]
+    public async Task<ActionResult<UserDetailDto>> GetUserDetail([FromRoute] Guid id, CancellationToken ct)
+    {
+        var result = await _mediator.Send(new GetUserDetailQuery(id), ct);
+        return Ok(result);
+    }
 
     /// <summary>GET /api/v1/users/pending - Admin lấy danh sách user PENDING.</summary>
     [HttpGet("pending")]
@@ -63,4 +80,40 @@ public class UserController : ControllerBase
         var result = await _mediator.Send(new SweepFarmerWalletCommand(id), ct);
         return Ok(result);
     }
+        /// <summary>PUT /api/v1/users/{id}/role - Admin phân quyền / thay đổi vai trò (Role) của tài khoản.</summary>
+    [HttpPut("{id:guid}/role")]
+    [Authorize(Policy = "RequireAdmin")]
+    public async Task<ActionResult<UserAccountDto>> ChangeRole([FromRoute] Guid id, [FromBody] ChangeUserRoleRequest body, CancellationToken ct)
+    {
+        var cmd = new ChangeUserRoleCommand(id, body.NewRole);
+        var result = await _mediator.Send(cmd, ct);
+        return Ok(result);
+    }
+
+    /// <summary>GET /api/v1/users/cooperative-profile - Lấy thông tin hồ sơ HTX/Doanh nghiệp của user đang đăng nhập.</summary>
+    [HttpGet("cooperative-profile")]
+    public async Task<ActionResult<CooperativeProfileDto>> GetCooperativeProfile(CancellationToken ct)
+    {
+        var result = await _mediator.Send(new GetCooperativeProfileQuery(), ct);
+        return Ok(result);
+    }
+
+    /// <summary>PUT /api/v1/users/cooperative-profile - Cập nhật hồ sơ HTX/Doanh nghiệp lưu vào Backend DB.</summary>
+    [HttpPut("cooperative-profile")]
+    public async Task<ActionResult<bool>> UpdateCooperativeProfile([FromBody] CooperativeProfileDto profile, CancellationToken ct)
+    {
+        var result = await _mediator.Send(new UpdateCooperativeProfileCommand(profile), ct);
+        return Ok(result);
+    }
+
+    /// <summary>PUT /api/v1/users/wallet-address - Cập nhật địa chỉ ví Blockchain cho user đang đăng nhập.</summary>
+    [HttpPut("wallet-address")]
+    public async Task<ActionResult<bool>> UpdateWalletAddress([FromBody] UpdateWalletAddressRequest body, CancellationToken ct)
+    {
+        var result = await _mediator.Send(new UpdateWalletAddressCommand(body.WalletAddress, body.PrivateKey), ct);
+        return Ok(result);
+    }
 }
+
+public record UpdateWalletAddressRequest(string WalletAddress, string? PrivateKey);
+

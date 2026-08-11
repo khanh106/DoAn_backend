@@ -25,6 +25,7 @@ public class User : BaseEntity
     public string? EncryptedPrivateKey { get; set; }
 
     public UserStatus Status { get; set; } = UserStatus.PENDING;
+    public string? CooperativeProfileInfo { get; set; }
 
     // Navigation
     public ICollection<BatchWorker> BatchWorkers { get; set; } = new List<BatchWorker>();

@@ -43,4 +43,6 @@ public class FarmAreaRepository : IFarmAreaRepository
 
     public void Update(FarmArea entity)
         => _db.FarmAreas.Update(entity);
+    public void Delete(FarmArea entity)
+        => _db.FarmAreas.Remove(entity);
 }

@@ -535,6 +535,10 @@ namespace DoAnV2.Infrastructure.Migrations
                         .HasColumnType("datetime2")
                         .HasColumnName("created_at");
 
+                    b.Property<string>("DataHash")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("data_hash");
+
                     b.Property<string>("DocumentName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)")
@@ -562,6 +566,10 @@ namespace DoAnV2.Infrastructure.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit")
                         .HasColumnName("is_deleted");
+
+                    b.Property<string>("MetadataURI")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("metadata_uri");
 
                     b.Property<string>("Note")
                         .HasColumnType("nvarchar(max)")
@@ -753,6 +761,10 @@ namespace DoAnV2.Infrastructure.Migrations
                         .HasColumnType("datetime2")
                         .HasColumnName("created_at");
 
+                    b.Property<string>("DataHash")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("data_hash");
+
                     b.Property<string>("ImageUrlsJson")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)")
@@ -761,6 +773,10 @@ namespace DoAnV2.Infrastructure.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit")
                         .HasColumnName("is_deleted");
+
+                    b.Property<string>("MetadataURI")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("metadata_uri");
 
                     b.Property<string>("Note")
                         .HasColumnType("nvarchar(max)")
@@ -926,6 +942,59 @@ namespace DoAnV2.Infrastructure.Migrations
                         .HasDatabaseName("ix_processings_batch_id");
 
                     b.ToTable("processings", (string)null);
+                });
+
+            modelBuilder.Entity("DoAnV2.Domain.Entities.ProcessorWorker", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTime>("InvitedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("invited_at");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<Guid>("ProcessorId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("processor_id");
+
+                    b.Property<DateTime?>("RespondedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("responded_at");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("status");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid>("WorkerId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("worker_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_processor_workers");
+
+                    b.HasIndex("WorkerId")
+                        .HasDatabaseName("ix_processor_workers_worker_id");
+
+                    b.HasIndex("ProcessorId", "WorkerId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_processor_workers_processor_id_worker_id");
+
+                    b.ToTable("processor_workers", (string)null);
                 });
 
             modelBuilder.Entity("DoAnV2.Domain.Entities.Product", b =>
@@ -1118,7 +1187,7 @@ namespace DoAnV2.Infrastructure.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2026, 8, 9, 11, 18, 26, 489, DateTimeKind.Utc).AddTicks(236),
+                            CreatedAt = new DateTime(2026, 8, 10, 14, 49, 34, 753, DateTimeKind.Utc).AddTicks(2452),
                             Description = "Quản trị hệ thống",
                             IsDeleted = false,
                             RoleName = "ADMIN"
@@ -1126,7 +1195,7 @@ namespace DoAnV2.Infrastructure.Migrations
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2026, 8, 9, 11, 18, 26, 489, DateTimeKind.Utc).AddTicks(2104),
+                            CreatedAt = new DateTime(2026, 8, 10, 14, 49, 34, 753, DateTimeKind.Utc).AddTicks(4255),
                             Description = "Nông dân / Công nhân",
                             IsDeleted = false,
                             RoleName = "FARMER"
@@ -1134,7 +1203,7 @@ namespace DoAnV2.Infrastructure.Migrations
                         new
                         {
                             Id = 3,
-                            CreatedAt = new DateTime(2026, 8, 9, 11, 18, 26, 489, DateTimeKind.Utc).AddTicks(2110),
+                            CreatedAt = new DateTime(2026, 8, 10, 14, 49, 34, 753, DateTimeKind.Utc).AddTicks(4258),
                             Description = "Hợp tác xã / Doanh nghiệp",
                             IsDeleted = false,
                             RoleName = "PROCESSOR"
@@ -1142,7 +1211,7 @@ namespace DoAnV2.Infrastructure.Migrations
                         new
                         {
                             Id = 4,
-                            CreatedAt = new DateTime(2026, 8, 9, 11, 18, 26, 489, DateTimeKind.Utc).AddTicks(2113),
+                            CreatedAt = new DateTime(2026, 8, 10, 14, 49, 34, 753, DateTimeKind.Utc).AddTicks(4260),
                             Description = "Cửa hàng bán lẻ",
                             IsDeleted = false,
                             RoleName = "RETAILER"
@@ -1419,11 +1488,11 @@ namespace DoAnV2.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("00000000-0000-0000-0000-000000000001"),
-                            CreatedAt = new DateTime(2026, 8, 9, 11, 18, 27, 176, DateTimeKind.Utc).AddTicks(4525),
+                            CreatedAt = new DateTime(2026, 8, 10, 14, 49, 35, 82, DateTimeKind.Utc).AddTicks(7922),
                             Email = "admin@gmail.com",
                             FullName = "System Administrator",
                             IsDeleted = false,
-                            PasswordHash = "$2a$11$VSKjT1g.fZCbhdFLRj555.WDfeFM.QuOwb7lIQzN5sjGLL/aVJK8u",
+                            PasswordHash = "$2a$11$mfESCLBm1H.9lLXCUtv03OCfqaaXkHAQiVsGPm1wpfOTFLelcCBie",
                             Phone = "0000000000",
                             RoleId = 1,
                             Status = "APPROVED"
@@ -1680,6 +1749,27 @@ namespace DoAnV2.Infrastructure.Migrations
                         .HasConstraintName("fk_processings_batches_batch_id");
 
                     b.Navigation("Batch");
+                });
+
+            modelBuilder.Entity("DoAnV2.Domain.Entities.ProcessorWorker", b =>
+                {
+                    b.HasOne("DoAnV2.Domain.Entities.User", "Processor")
+                        .WithMany()
+                        .HasForeignKey("ProcessorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_processor_workers_users_processor_id");
+
+                    b.HasOne("DoAnV2.Domain.Entities.User", "Worker")
+                        .WithMany()
+                        .HasForeignKey("WorkerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_processor_workers_users_worker_id");
+
+                    b.Navigation("Processor");
+
+                    b.Navigation("Worker");
                 });
 
             modelBuilder.Entity("DoAnV2.Domain.Entities.Product", b =>

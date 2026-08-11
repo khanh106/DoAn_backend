@@ -30,6 +30,7 @@ public class CreateBatchCommandHandler : IRequestHandler<CreateBatchCommand, Bat
     private readonly ICurrentUser _currentUser;
     private readonly IIpfsService _ipfs;
     private readonly IBlockchainService _blockchain;
+    private readonly IWalletService _walletService;
     private readonly WalletOptions _walletOptions;
     private readonly ILogger<CreateBatchCommandHandler> _logger;
 
@@ -38,6 +39,7 @@ public class CreateBatchCommandHandler : IRequestHandler<CreateBatchCommand, Bat
         ICurrentUser currentUser,
         IIpfsService ipfs,
         IBlockchainService blockchain,
+        IWalletService walletService,
         IOptions<WalletOptions> walletOptions,
         ILogger<CreateBatchCommandHandler> logger)
     {
@@ -45,14 +47,25 @@ public class CreateBatchCommandHandler : IRequestHandler<CreateBatchCommand, Bat
         _currentUser = currentUser;
         _ipfs = ipfs;
         _blockchain = blockchain;
+        _walletService = walletService;
         _walletOptions = walletOptions.Value;
         _logger = logger;
     }
 
     public async Task<BatchDto> Handle(CreateBatchCommand req, CancellationToken ct)
     {
-        // ========== 1. Validate Processor ==========
+        // ========== 1. Validate Processor & Lấy Ví HTX đã liên kết ==========
         var processorId = Guard.RequireProcessor(_currentUser);
+        var processorUser = await _uow.Users.GetByIdAsync(processorId, ct)
+            ?? throw new NotFoundException($"Không tìm thấy Processor User {processorId}.");
+
+        string? processorPrivateKey = null;
+        if (!string.IsNullOrWhiteSpace(processorUser.EncryptedPrivateKey))
+        {
+            processorPrivateKey = _walletService.DecryptPrivateKey(
+                processorUser.EncryptedPrivateKey, _walletOptions.EncryptionKey);
+        }
+
 
         if (string.IsNullOrWhiteSpace(req.BatchCode))
             throw new ValidationException("BatchCode không được trống.");
@@ -165,17 +178,19 @@ public class CreateBatchCommandHandler : IRequestHandler<CreateBatchCommand, Bat
         _uow.Batches.Update(batch);
 
         // ========== 8. Gọi Smart Contract: createBatch ==========
-        // �️ batchId truyền cho SC là Guid dạng string - BlockchainService đã tự keccak256(bytes32).
+        // ️ Nếu HTX đã lưu Private Key ➔ Dùng ví HTX ký; nếu chưa lưu ➔ Dùng ví Hệ thống (Admin) ký dự phòng.
         var createTxHash = await _blockchain.CreateBatchAsync(
             batchId: batch.Id.ToString(),
             batchCode: batch.BatchCode,
             fruitType: fruitType.Code,
             metadataURI: metadataURI,
             dataHash: dataHash,
+            signerPrivateKey: processorPrivateKey, 
             ct: ct);
 
         _logger.LogInformation(
-            "Batch {BatchCode} created on-chain. TxHash={TxHash}", batch.BatchCode, createTxHash);
+            "Batch {BatchCode} created on-chain. TxHash={TxHash} (Signer={SignerType})",
+            batch.BatchCode, createTxHash, string.IsNullOrWhiteSpace(processorPrivateKey) ? "AdminFallback" : "HTXPrivateKey");
 
         // ========== 9. Với từng worker: assignWorker + setRepresentative ==========
         var repUser = workers.First(w => w.Id == req.RepresentativeWorkerId);

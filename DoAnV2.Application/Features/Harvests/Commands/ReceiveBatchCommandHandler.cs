@@ -1,21 +1,18 @@
 using DoAnV2.Application.Common.Exceptions;
 using DoAnV2.Application.Common.Interfaces;
+using DoAnV2.Application.Common.Options;
 using DoAnV2.Application.Features.Batches.Batches.Commands;
 using DoAnV2.Application.Features.Harvests.Dtos;
 using DoAnV2.Domain.Entities;
 using DoAnV2.Domain.Enums;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace DoAnV2.Application.Features.Harvests.Commands;
 
 /// <summary>
 /// TASK 06 - Mục 6.3: Handler Processor tiếp nhận lô sau thu hoạch (gọi SC receiveBatch).
-///   1. Validate lô tồn tại &amp; đang ở STAGE_HARVESTED (BR-11).
-///   2. Validate Processor sở hữu Batch.
-///   3. Upload thông tin tiếp nhận lên IPFS ➔ (MetadataURI, DataHash).
-///   4. Processor gọi SC receiveBatch(batchId, metadataURI, dataHash).
-///   5. Cập nhật Batch.CurrentStage = STAGE_RECEIVED.
 /// </summary>
 public class ReceiveBatchCommandHandler
     : IRequestHandler<ReceiveBatchCommand, ReceiveBatchResponseDto>
@@ -24,6 +21,8 @@ public class ReceiveBatchCommandHandler
     private readonly ICurrentUser _currentUser;
     private readonly IIpfsService _ipfs;
     private readonly IBlockchainService _blockchain;
+    private readonly IWalletService _walletService;
+    private readonly WalletOptions _walletOptions;
     private readonly ILogger<ReceiveBatchCommandHandler> _logger;
 
     public ReceiveBatchCommandHandler(
@@ -31,12 +30,16 @@ public class ReceiveBatchCommandHandler
         ICurrentUser currentUser,
         IIpfsService ipfs,
         IBlockchainService blockchain,
+        IWalletService walletService,
+        IOptions<WalletOptions> walletOptions,
         ILogger<ReceiveBatchCommandHandler> logger)
     {
         _uow = uow;
         _currentUser = currentUser;
         _ipfs = ipfs;
         _blockchain = blockchain;
+        _walletService = walletService;
+        _walletOptions = walletOptions.Value;
         _logger = logger;
     }
 
@@ -85,7 +88,18 @@ public class ReceiveBatchCommandHandler
             fileName: $"receive-{batch.BatchCode}-{DateTime.UtcNow:yyyyMMddHHmmss}.json",
             ct: ct);
 
-        // ========== 4. Gọi SC: receiveBatch(batchId, metadataURI, dataHash) ==========
+        // ========== 4. Lấy và giải mã Private Key của ví Processor ==========
+        var processorUser = await _uow.Users.GetByIdAsync(processorId, ct)
+            ?? throw new NotFoundException($"Không tìm thấy thông tin tài khoản Processor {processorId}.");
+
+        string? signerPrivateKey = null;
+        if (!string.IsNullOrWhiteSpace(processorUser.EncryptedPrivateKey))
+        {
+            signerPrivateKey = _walletService.DecryptPrivateKey(
+                processorUser.EncryptedPrivateKey, _walletOptions.EncryptionKey);
+        }
+
+        // ========== 5. Gọi SC: receiveBatch(batchId, metadataURI, dataHash) ==========
         string txHash;
         try
         {
@@ -93,6 +107,7 @@ public class ReceiveBatchCommandHandler
                 batchId: batch.Id.ToString(),
                 metadataURI: metadataURI,
                 dataHash: dataHash,
+                signerPrivateKey: signerPrivateKey,
                 ct: ct);
         }
         catch (Exception ex)
@@ -102,12 +117,10 @@ public class ReceiveBatchCommandHandler
             throw;
         }
 
-        // ========== 5. Lưu Harvest record (loại: receive) + cập nhật stage ==========
+        // ========== 6. Lưu Harvest record (loại: receive) + cập nhật stage ==========
         var receive = new Harvest
         {
             BatchId = batch.Id,
-            // Receive thực hiện bởi Processor - không có representative user trong DB,
-            // nhưng schema yêu cầu RepresentativeUserId NOT NULL ➔ dùng Processor.
             RepresentativeUserId = processorId,
             HarvestDate = req.ReceivedDate,
             Quantity = req.Quantity,

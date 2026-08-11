@@ -1,19 +1,17 @@
 using DoAnV2.Application.Common.Exceptions;
 using DoAnV2.Application.Common.Interfaces;
+using DoAnV2.Application.Common.Options;
 using DoAnV2.Application.Features.Batches.Batches.Commands;
 using DoAnV2.Application.Features.Processing.Dtos;
 using DoAnV2.Domain.Enums;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace DoAnV2.Application.Features.Processing.Commands;
 
 /// <summary>
 /// TASK 07 - Mục 7.2: Handler phân loại KHÔNG tách lô (gọi SC classifyOnlyBatch).
-///   1. Validate Batch ở STAGE_PROCESSED (BR-12).
-///   2. Upload Metadata (note + gradeDetails) lên IPFS.
-///   3. Gọi SC classifyOnlyBatch(batchId, metadataURI, dataHash).
-///   4. Cập nhật Batch.CurrentStage = STAGE_SORTED.
 /// </summary>
 public class ClassifyOnlyBatchCommandHandler
     : IRequestHandler<ClassifyOnlyBatchCommand, ClassifyOnlyResponseDto>
@@ -22,6 +20,8 @@ public class ClassifyOnlyBatchCommandHandler
     private readonly ICurrentUser _currentUser;
     private readonly IIpfsService _ipfs;
     private readonly IBlockchainService _blockchain;
+    private readonly IWalletService _walletService;
+    private readonly WalletOptions _walletOptions;
     private readonly ILogger<ClassifyOnlyBatchCommandHandler> _logger;
 
     public ClassifyOnlyBatchCommandHandler(
@@ -29,12 +29,16 @@ public class ClassifyOnlyBatchCommandHandler
         ICurrentUser currentUser,
         IIpfsService ipfs,
         IBlockchainService blockchain,
+        IWalletService walletService,
+        IOptions<WalletOptions> walletOptions,
         ILogger<ClassifyOnlyBatchCommandHandler> logger)
     {
         _uow = uow;
         _currentUser = currentUser;
         _ipfs = ipfs;
         _blockchain = blockchain;
+        _walletService = walletService;
+        _walletOptions = walletOptions.Value;
         _logger = logger;
     }
 
@@ -90,6 +94,17 @@ public class ClassifyOnlyBatchCommandHandler
             fileName: $"classify-only-{batch.BatchCode}-{DateTime.UtcNow:yyyyMMddHHmmss}.json",
             ct: ct);
 
+        // ========== 3.5. Lấy và giải mã Private Key của ví Processor ==========
+        var processorUser = await _uow.Users.GetByIdAsync(processorId, ct)
+            ?? throw new NotFoundException($"Không tìm thấy thông tin tài khoản Processor {processorId}.");
+
+        string? signerPrivateKey = null;
+        if (!string.IsNullOrWhiteSpace(processorUser.EncryptedPrivateKey))
+        {
+            signerPrivateKey = _walletService.DecryptPrivateKey(
+                processorUser.EncryptedPrivateKey, _walletOptions.EncryptionKey);
+        }
+
         // ========== 4. Gọi SC: classifyOnlyBatch(batchId, metadataURI, dataHash) ==========
         string txHash;
         try
@@ -98,6 +113,7 @@ public class ClassifyOnlyBatchCommandHandler
                 batchId: batch.Id.ToString(),
                 metadataURI: metadataURI,
                 dataHash: dataHash,
+                signerPrivateKey: signerPrivateKey,
                 ct: ct);
         }
         catch (Exception ex)

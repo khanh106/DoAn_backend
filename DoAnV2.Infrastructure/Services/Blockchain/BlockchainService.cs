@@ -191,11 +191,23 @@ public class BlockchainService : IBlockchainService
 
     public Task<string> CreateBatchAsync(
         string batchId, string batchCode, string fruitType,
-        string metadataURI, string dataHash, CancellationToken ct = default)
-        => SendSimpleAsync(
+        string metadataURI, string dataHash,
+        string? signerPrivateKey = null,
+        CancellationToken ct = default)
+    {
+        string? signerAddress = null;
+        if (!string.IsNullOrWhiteSpace(signerPrivateKey))
+        {
+            signerAddress = new EthECKey(signerPrivateKey).GetPublicAddress();
+        }
+
+        return SendSimpleAsync(
             BlockchainFunctionNames.CreateBatch, batchId, null,
             () => BuildBatchInputs(batchId, batchCode, fruitType, metadataURI, dataHash),
+            signerPrivateKey: signerPrivateKey,
+            signerAddress: signerAddress,
             ct: ct);
+    }
 
     public Task<string> AssignWorkerAsync(
         string batchId, string workerAddress, CancellationToken ct = default)
@@ -245,8 +257,8 @@ public class BlockchainService : IBlockchainService
             ct: ct);
     }
 
-    public Task<string> ReceiveBatchAsync(
-        string batchId, string metadataURI, string dataHash, CancellationToken ct = default)
+        public Task<string> ReceiveBatchAsync(
+        string batchId, string metadataURI, string dataHash, string? signerPrivateKey = null, CancellationToken ct = default)
         => SendSimpleAsync(
             BlockchainFunctionNames.ReceiveBatch, batchId, null,
             () => new object[]
@@ -255,10 +267,13 @@ public class BlockchainService : IBlockchainService
                 metadataURI,
                 SmartContractIds.HexToBytes32(dataHash) ?? SmartContractIds.CodeToBytes32(dataHash),
             },
+            signerPrivateKey: signerPrivateKey,
+            signerAddress: !string.IsNullOrWhiteSpace(signerPrivateKey) ? new EthECKey(signerPrivateKey).GetPublicAddress() : null,
             ct: ct);
 
+
     public Task<string> ProcessBatchAsync(
-        string batchId, string metadataURI, string dataHash, CancellationToken ct = default)
+        string batchId, string metadataURI, string dataHash, string? signerPrivateKey = null, CancellationToken ct = default)
         => SendSimpleAsync(
             BlockchainFunctionNames.ProcessBatch, batchId, null,
             () => new object[]
@@ -267,6 +282,8 @@ public class BlockchainService : IBlockchainService
                 metadataURI,
                 SmartContractIds.HexToBytes32(dataHash) ?? SmartContractIds.CodeToBytes32(dataHash),
             },
+            signerPrivateKey: signerPrivateKey,
+            signerAddress: !string.IsNullOrWhiteSpace(signerPrivateKey) ? new EthECKey(signerPrivateKey).GetPublicAddress() : null,
             ct: ct);
 
     // =============================================================
@@ -274,7 +291,7 @@ public class BlockchainService : IBlockchainService
     // =============================================================
 
     public Task<string> ClassifyOnlyBatchAsync(
-        string batchId, string metadataURI, string dataHash, CancellationToken ct = default)
+        string batchId, string metadataURI, string dataHash, string? signerPrivateKey = null, CancellationToken ct = default)
         => SendSimpleAsync(
             BlockchainFunctionNames.ClassifyOnlyBatch, batchId, null,
             () => new object[]
@@ -283,11 +300,13 @@ public class BlockchainService : IBlockchainService
                 metadataURI,
                 SmartContractIds.HexToBytes32(dataHash) ?? SmartContractIds.CodeToBytes32(dataHash),
             },
+            signerPrivateKey: signerPrivateKey,
+            signerAddress: !string.IsNullOrWhiteSpace(signerPrivateKey) ? new EthECKey(signerPrivateKey).GetPublicAddress() : null,
             ct: ct);
 
     public Task<string> SplitBatchAsync(
         string batchId, string[] subBatchIds, string[] metadataURIs, string[] dataHashes,
-        CancellationToken ct = default)
+        string? signerPrivateKey = null, CancellationToken ct = default)
         => SendSimpleAsync(
             BlockchainFunctionNames.SplitBatch, batchId, null,
             () => new object[]
@@ -297,6 +316,8 @@ public class BlockchainService : IBlockchainService
                 metadataURIs,
                 dataHashes.Select(h => SmartContractIds.HexToBytes32(h) ?? SmartContractIds.CodeToBytes32(h)).ToArray(),
             },
+            signerPrivateKey: signerPrivateKey,
+            signerAddress: !string.IsNullOrWhiteSpace(signerPrivateKey) ? new EthECKey(signerPrivateKey).GetPublicAddress() : null,
             ct: ct);
 
     // =============================================================
@@ -304,7 +325,7 @@ public class BlockchainService : IBlockchainService
     // =============================================================
 
     public Task<string> InspectParentAsync(
-        string batchId, bool passed, string metadataURI, string dataHash, CancellationToken ct = default)
+        string batchId, bool passed, string metadataURI, string dataHash, string? signerPrivateKey = null, CancellationToken ct = default)
         => SendSimpleAsync(
             BlockchainFunctionNames.InspectParent, batchId, null,
             () => new object[]
@@ -314,10 +335,12 @@ public class BlockchainService : IBlockchainService
                 metadataURI,
                 SmartContractIds.HexToBytes32(dataHash) ?? SmartContractIds.CodeToBytes32(dataHash),
             },
+            signerPrivateKey: signerPrivateKey,
+            signerAddress: !string.IsNullOrWhiteSpace(signerPrivateKey) ? new EthECKey(signerPrivateKey).GetPublicAddress() : null,
             ct: ct);
 
     public Task<string> InspectSubAsync(
-        string subBatchId, bool passed, string metadataURI, string dataHash, CancellationToken ct = default)
+        string subBatchId, bool passed, string metadataURI, string dataHash, string? signerPrivateKey = null, CancellationToken ct = default)
         => SendSimpleAsync(
             BlockchainFunctionNames.InspectSub, null, subBatchId,
             () => new object[]
@@ -327,6 +350,8 @@ public class BlockchainService : IBlockchainService
                 metadataURI,
                 SmartContractIds.HexToBytes32(dataHash) ?? SmartContractIds.CodeToBytes32(dataHash),
             },
+            signerPrivateKey: signerPrivateKey,
+            signerAddress: !string.IsNullOrWhiteSpace(signerPrivateKey) ? new EthECKey(signerPrivateKey).GetPublicAddress() : null,
             ct: ct);
 
     // =============================================================
@@ -334,7 +359,7 @@ public class BlockchainService : IBlockchainService
     // =============================================================
 
     public Task<string> PackageParentAsync(
-        string batchId, string metadataURI, string dataHash, CancellationToken ct = default)
+        string batchId, string metadataURI, string dataHash, string? signerPrivateKey = null, CancellationToken ct = default)
         => SendSimpleAsync(
             BlockchainFunctionNames.PackageParent, batchId, null,
             () => new object[]
@@ -343,10 +368,12 @@ public class BlockchainService : IBlockchainService
                 metadataURI,
                 SmartContractIds.HexToBytes32(dataHash) ?? SmartContractIds.CodeToBytes32(dataHash),
             },
+            signerPrivateKey: signerPrivateKey,
+            signerAddress: !string.IsNullOrWhiteSpace(signerPrivateKey) ? new EthECKey(signerPrivateKey).GetPublicAddress() : null,
             ct: ct);
 
     public Task<string> PackageSubAsync(
-        string subBatchId, string metadataURI, string dataHash, CancellationToken ct = default)
+        string subBatchId, string metadataURI, string dataHash, string? signerPrivateKey = null, CancellationToken ct = default)
         => SendSimpleAsync(
             BlockchainFunctionNames.PackageSub, null, subBatchId,
             () => new object[]
@@ -355,6 +382,8 @@ public class BlockchainService : IBlockchainService
                 metadataURI,
                 SmartContractIds.HexToBytes32(dataHash) ?? SmartContractIds.CodeToBytes32(dataHash),
             },
+            signerPrivateKey: signerPrivateKey,
+            signerAddress: !string.IsNullOrWhiteSpace(signerPrivateKey) ? new EthECKey(signerPrivateKey).GetPublicAddress() : null,
             ct: ct);
 
     // =============================================================
@@ -362,7 +391,7 @@ public class BlockchainService : IBlockchainService
     // =============================================================
 
     public Task<string> ShipParentAsync(
-        string batchId, string metadataURI, string dataHash, CancellationToken ct = default)
+        string batchId, string metadataURI, string dataHash, string? signerPrivateKey = null, CancellationToken ct = default)
         => SendSimpleAsync(
             BlockchainFunctionNames.ShipParent, batchId, null,
             () => new object[]
@@ -371,10 +400,12 @@ public class BlockchainService : IBlockchainService
                 metadataURI,
                 SmartContractIds.HexToBytes32(dataHash) ?? SmartContractIds.CodeToBytes32(dataHash),
             },
+            signerPrivateKey: signerPrivateKey,
+            signerAddress: !string.IsNullOrWhiteSpace(signerPrivateKey) ? new EthECKey(signerPrivateKey).GetPublicAddress() : null,
             ct: ct);
 
     public Task<string> ShipSubAsync(
-        string subBatchId, string metadataURI, string dataHash, CancellationToken ct = default)
+        string subBatchId, string metadataURI, string dataHash, string? signerPrivateKey = null, CancellationToken ct = default)
         => SendSimpleAsync(
             BlockchainFunctionNames.ShipSub, null, subBatchId,
             () => new object[]
@@ -383,6 +414,8 @@ public class BlockchainService : IBlockchainService
                 metadataURI,
                 SmartContractIds.HexToBytes32(dataHash) ?? SmartContractIds.CodeToBytes32(dataHash),
             },
+            signerPrivateKey: signerPrivateKey,
+            signerAddress: !string.IsNullOrWhiteSpace(signerPrivateKey) ? new EthECKey(signerPrivateKey).GetPublicAddress() : null,
             ct: ct);
 
     // =============================================================
@@ -444,6 +477,9 @@ public class BlockchainService : IBlockchainService
     /// <summary>
     /// Helper chính: gọi 1 hàm SC, ghi PENDING ➔ SUCCESS/FAILED.
     /// </summary>
+        /// <summary>
+    /// Helper chính: gọi 1 hàm SC, ghi PENDING ➔ SUCCESS/FAILED.
+    /// </summary>
     private async Task<string> SendSimpleAsync(
         string functionName,
         string? batchId,
@@ -481,10 +517,29 @@ public class BlockchainService : IBlockchainService
 
             pending.TransactionHash = txHash;
 
-            // 4. Chờ receipt
-            var receipt = await web3.Eth.Transactions.GetTransactionReceipt
-                .SendRequestAsync(txHash, ct)
-                .WaitAsync(TimeSpan.FromSeconds(_walletFunding.ReceiptTimeoutSeconds), ct);
+            // 4. Chờ receipt (Polling Retry 2 giây/lần để Infura/Sepolia kịp đào block)
+            Nethereum.RPC.Eth.DTOs.TransactionReceipt? receipt = null;
+            var timeoutSeconds = _walletFunding.ReceiptTimeoutSeconds > 0 ? _walletFunding.ReceiptTimeoutSeconds : 60;
+            var timeout = TimeSpan.FromSeconds(timeoutSeconds);
+            var startTime = DateTime.UtcNow;
+
+            while (DateTime.UtcNow - startTime < timeout)
+            {
+                if (ct.IsCancellationRequested) break;
+
+                try
+                {
+                    receipt = await web3.Eth.Transactions.GetTransactionReceipt.SendRequestAsync(txHash);
+                    if (receipt != null) break;
+                }
+                catch
+                {
+                    // Khi tx mới vào Mempool chưa được đào, Infura sẽ quăng lỗi "Internal error: eth_getTransactionReceipt"
+                    // Bỏ qua ngoại lệ tạm thời này và lặp lại sau 2 giây
+                }
+
+                await Task.Delay(2000, ct);
+            }
 
             if (receipt is null)
             {
@@ -575,16 +630,20 @@ public class BlockchainService : IBlockchainService
     /// nhưng trên một số testnet estimate lỗi nên ta hard-code theo pattern).
     /// </summary>
     private static HexBigInteger GetGasForFunction(string fn)
+{
+    // Đặt hạn mức Gas Limit rộng rãi cho từng hàm Smart Contract
+    // (Lưu ý: Lượng gas dư thừa không dùng hết sẽ được EVM tự động hoàn trả lại ví)
+    var g = fn switch
     {
-        // Đủ cho cả 5-array splitBatch (largest) trên Sepolia.
-        var g = fn switch
-        {
-            nameof(BlockchainFunctionNames.CreateBatch) => 250_000,
-            nameof(BlockchainFunctionNames.SplitBatch) => 800_000,
-            _ => 200_000,
-        };
-        return new HexBigInteger(g);
-    }
+        nameof(BlockchainFunctionNames.CreateBatch) => 800_000,
+        nameof(BlockchainFunctionNames.SplitBatch) => 1_500_000,
+        nameof(BlockchainFunctionNames.AssignWorker) => 500_000,
+        nameof(BlockchainFunctionNames.SetRepresentative) => 500_000,
+        _ => 500_000,
+    };
+    return new HexBigInteger(g);
+}
+
 
     private static Guid? TryParseGuid(string? s)
         => Guid.TryParse(s, out var g) ? g : null;

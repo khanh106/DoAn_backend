@@ -1,4 +1,5 @@
 using DoAnV2.Domain.Entities;
+using DoAnV2.Domain.Enums;
 
 namespace DoAnV2.Application.Common.Interfaces;
 
@@ -25,4 +26,19 @@ public interface IBatchRepository
     void Update(Batch entity);
 
     void Remove(Batch entity);
+
+    /// <summary>
+    /// TASK 11 - Mục 11.1: Thống kê số lượng Parent Batch theo từng trạng thái - dùng cho Dashboard Admin.
+    /// </summary>
+    Task<BatchStats> GetStatsAsync(CancellationToken ct = default);
+    Task<IReadOnlyList<Batch>> GetByProcessorIdAsync(Guid processorId, CancellationToken ct = default);
 }
+
+
+
+public record BatchStats(
+    int Total,
+    int InProduction,       // STAGE_PLANTING
+    int Harvested,          // STAGE_HARVESTED
+    int Packaged,           // PACKAGED
+    int ReadyForSale);      // READY_FOR_SALE

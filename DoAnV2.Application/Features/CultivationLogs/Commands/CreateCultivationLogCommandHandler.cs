@@ -49,7 +49,11 @@ public class CreateCultivationLogCommandHandler
         CreateCultivationLogCommand req, CancellationToken ct)
     {
         // ========== 1. Auth & validate input ==========
-        var userId = Guard.RequireFarmer(_currentUser);
+        if (!_currentUser.IsAuthenticated || _currentUser.UserId is null)
+            throw new UnauthorizedException("Người dùng chưa đăng nhập.");
+
+        var userId = _currentUser.UserId.Value;
+        var role = _currentUser.Role?.ToUpperInvariant();
 
         if (string.IsNullOrWhiteSpace(req.ActivityType))
             throw new ValidationException("ActivityType không được trống.");
@@ -61,12 +65,28 @@ public class CreateCultivationLogCommandHandler
         if (req.LogDate == default)
             throw new ValidationException("LogDate không hợp lệ.");
 
-        // ========== 2. Validate Batch + Worker assignment (BR-03) ==========
+        // ========== 2. Validate Batch + Permission ==========
         var batch = await _uow.Batches.GetByIdAsync(req.BatchId, ct)
             ?? throw new NotFoundException($"Không tìm thấy Batch {req.BatchId}.");
 
-        var bw = await _uow.BatchWorkers.GetAsync(req.BatchId, userId, ct)
-            ?? throw new ForbiddenException("Bạn không được phân công vào Batch này.");
+        string userFullName = string.Empty;
+        if (role == "FARMER")
+        {
+            var bw = await _uow.BatchWorkers.GetAsync(req.BatchId, userId, ct)
+                ?? throw new ForbiddenException("Bạn không được phân công vào Batch này.");
+            userFullName = bw.User?.FullName ?? string.Empty;
+        }
+        else if (role == "PROCESSOR" || role == "COOPERATIVE" || role == "ADMIN")
+        {
+            if (role == "PROCESSOR" && batch.ProcessorId != userId)
+                throw new ForbiddenException("Bạn không có quyền quản lý Batch này.");
+            var user = await _uow.Users.GetByIdAsync(userId, ct);
+            userFullName = user?.FullName ?? "Hợp tác xã";
+        }
+        else
+        {
+            throw new ForbiddenException("Không có quyền thực hiện thao tác này.");
+        }
 
         // ========== 3. Upload danh sách ảnh lên IPFS ==========
         var imageUris = new List<string>();
@@ -127,7 +147,7 @@ public class CreateCultivationLogCommandHandler
             BatchId: batch.Id,
             BatchCode: batch.BatchCode,
             UserId: userId,
-            UserFullName: bw.User?.FullName ?? string.Empty,
+            UserFullName: userFullName,
             ActivityType: log.ActivityType,
             Description: log.Description,
             LogDate: log.LogDate,

@@ -1,21 +1,19 @@
 using System.Text.Json;
 using DoAnV2.Application.Common.Exceptions;
 using DoAnV2.Application.Common.Interfaces;
+using DoAnV2.Application.Common.Options;
 using DoAnV2.Application.Features.Batches.Batches.Commands;
 using DoAnV2.Application.Features.Packagings.Dtos;
 using DoAnV2.Domain.Entities;
 using DoAnV2.Domain.Enums;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace DoAnV2.Application.Features.Packagings.Commands;
 
 /// <summary>
 /// TASK 08 - Mục 8.2: Handler Processor đóng gói cho Parent Batch (gọi SC packageParent).
-///   1. Validate Batch tồn tại &amp; Processor sở hữu &amp; ở INSPECTION_PASSED (BR-14).
-///   2. Upload ảnh (nếu có) + Metadata JSON lên IPFS ➔ (MetadataURI, DataHash).
-///   3. Processor gọi SC packageParent(batchId, metadataURI, dataHash).
-///   4. Lưu Packaging (AssetType=PARENT) + cập nhật Batch.CurrentStage = PACKAGED.
 /// </summary>
 public class PackageParentCommandHandler
     : IRequestHandler<PackageParentCommand, PackagingResponseDto>
@@ -24,6 +22,8 @@ public class PackageParentCommandHandler
     private readonly ICurrentUser _currentUser;
     private readonly IIpfsService _ipfs;
     private readonly IBlockchainService _blockchain;
+    private readonly IWalletService _walletService;
+    private readonly WalletOptions _walletOptions;
     private readonly ILogger<PackageParentCommandHandler> _logger;
 
     public PackageParentCommandHandler(
@@ -31,12 +31,16 @@ public class PackageParentCommandHandler
         ICurrentUser currentUser,
         IIpfsService ipfs,
         IBlockchainService blockchain,
+        IWalletService walletService,
+        IOptions<WalletOptions> walletOptions,
         ILogger<PackageParentCommandHandler> logger)
     {
         _uow = uow;
         _currentUser = currentUser;
         _ipfs = ipfs;
         _blockchain = blockchain;
+        _walletService = walletService;
+        _walletOptions = walletOptions.Value;
         _logger = logger;
     }
 
@@ -108,6 +112,17 @@ public class PackageParentCommandHandler
             fileName: $"package-parent-{batch.BatchCode}-{now:yyyyMMddHHmmss}.json",
             ct: ct);
 
+        // ========== 4.5. Lấy và giải mã Private Key của ví Processor ==========
+        var processorUser = await _uow.Users.GetByIdAsync(processorId, ct)
+            ?? throw new NotFoundException($"Không tìm thấy thông tin tài khoản Processor {processorId}.");
+
+        string? signerPrivateKey = null;
+        if (!string.IsNullOrWhiteSpace(processorUser.EncryptedPrivateKey))
+        {
+            signerPrivateKey = _walletService.DecryptPrivateKey(
+                processorUser.EncryptedPrivateKey, _walletOptions.EncryptionKey);
+        }
+
         // ========== 5. Gọi SC: packageParent(batchId, metadataURI, dataHash) ==========
         string txHash;
         try
@@ -116,6 +131,7 @@ public class PackageParentCommandHandler
                 batchId: batch.Id.ToString(),
                 metadataURI: metadataURI,
                 dataHash: dataHash,
+                signerPrivateKey: signerPrivateKey,
                 ct: ct);
         }
         catch (Exception ex)
@@ -140,6 +156,9 @@ public class PackageParentCommandHandler
             Standard = req.Input.Standard?.Trim(),
             Note = req.Input.Note?.Trim(),
             ImageUrlsJson = JsonSerializer.Serialize(imageUrls),
+            // TASK 11: Lưu metadataURI/DataHash để phục vụ Retry (BR-42)
+            MetadataURI = metadataURI,
+            DataHash = dataHash,
         };
         await _uow.Packagings.AddAsync(packaging, ct);
 

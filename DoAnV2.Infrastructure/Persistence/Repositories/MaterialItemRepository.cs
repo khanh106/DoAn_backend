@@ -28,4 +28,7 @@ public class MaterialItemRepository : IMaterialItemRepository
 
     public void Update(MaterialItem entity)
         => _db.MaterialItems.Update(entity);
+
+    public void Delete(MaterialItem entity)
+        => _db.MaterialItems.Remove(entity);
 }

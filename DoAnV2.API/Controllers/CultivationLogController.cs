@@ -13,7 +13,7 @@ namespace DoAnV2.API.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/v1/farmer/batches/{batchId:guid}/logs")]
-[Authorize(Policy = "RequireFarmer")]
+[Authorize(Roles = "FARMER,PROCESSOR,COOPERATIVE,ADMIN")]
 public class CultivationLogController : ControllerBase
 {
     private readonly IMediator _mediator;

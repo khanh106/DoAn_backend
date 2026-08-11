@@ -64,4 +64,10 @@ public class FarmAreaController : ControllerBase
         var result = await _mediator.Send(cmd, ct);
         return Ok(result);
     }
+    [HttpDelete("{id:guid}")]
+    public async Task<ActionResult> Delete([FromRoute] Guid id, CancellationToken ct)
+    {
+        await _mediator.Send(new DeleteFarmAreaCommand(id), ct);
+        return NoContent();
+    }
 }

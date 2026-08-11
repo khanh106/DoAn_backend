@@ -21,6 +21,7 @@ public static class DependencyInjection
     public static IServiceCollection AddInfrastructure(this IServiceCollection services)
     {
         // ============ UoW + Repositories ============
+        services.AddScoped<IProcessorWorkerRepository, ProcessorWorkerRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IBlockchainTransactionRepository, BlockchainTransactionRepository>();
@@ -39,6 +40,7 @@ public static class DependencyInjection
         services.AddScoped<IPackagingRepository, PackagingRepository>();
         services.AddScoped<IShipmentRepository, ShipmentRepository>();
         services.AddScoped<IQRCodeRepository, QRCodeRepository>();
+        services.AddScoped<IDistributorRepository, DistributorRepository>();
 
         // ============ Auth / Wallet / JWT ============
         services.AddScoped<IPasswordHasher, PasswordHasher>();

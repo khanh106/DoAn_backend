@@ -14,7 +14,7 @@ namespace DoAnV2.Application.Features.Auth.Handlers;
 /// Xử lý luồng đăng ký:
 /// 1. Validate email không trùng.
 /// 2. Hash mật khẩu bằng BCrypt.
-/// 3. Nếu Role = FARMER ➔ tự sinh Custodial Wallet (AES-256).
+/// 3. Nếu Role = FARMER hoặc RETAILER ➔ tự sinh Custodial Wallet (AES-256).
 /// 4. Tạo User với Status = PENDING.
 /// 5. Trả AuthResponse (chưa trả token vì Status = PENDING, sẽ trả response rỗng).
 /// </summary>
@@ -48,11 +48,11 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthRespo
         if (await _uow.Users.EmailExistsAsync(req.Email, ct))
             throw new ConflictException($"Email '{req.Email}' đã được sử dụng.");
 
-        var role = new Role
+        // Nếu không phải FARMER hoặc RETAILER (vì FARMER và RETAILER tự sinh ví Custodial), mà không nhập WalletAddress ➔ Báo lỗi
+        if (req.RoleRequested != RoleType.FARMER && req.RoleRequested != RoleType.RETAILER && string.IsNullOrWhiteSpace(req.WalletAddress))
         {
-            Id = (int)req.RoleRequested,
-            RoleName = req.RoleRequested,
-        };
+            throw new ValidationException("Địa chỉ ví (Wallet Address) là bắt buộc đối với Hợp tác xã.");
+        }
 
         var user = new User
         {
@@ -61,12 +61,12 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthRespo
             Phone = req.Phone,
             PasswordHash = _hasher.Hash(req.Password),
             RoleId = (int)req.RoleRequested,
-            Role = role,
             Status = UserStatus.PENDING,
+            WalletAddress = req.WalletAddress,
         };
 
-        // Nếu là FARMER ➔ sinh Custodial Wallet (Ethereum).
-        if (req.RoleRequested == RoleType.FARMER && _walletOptions.CustodialMode)
+        // Nếu là FARMER hoặc RETAILER (Siêu thị) ➔ sinh Custodial Wallet (Ethereum).
+        if ((req.RoleRequested == RoleType.FARMER || req.RoleRequested == RoleType.RETAILER) && _walletOptions.CustodialMode)
         {
             var (address, encryptedKey) = _wallet.GenerateEthereumWallet(_walletOptions.EncryptionKey);
             user.WalletAddress = address;

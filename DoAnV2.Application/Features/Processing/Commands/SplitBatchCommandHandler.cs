@@ -1,24 +1,18 @@
 using DoAnV2.Application.Common.Exceptions;
 using DoAnV2.Application.Common.Interfaces;
+using DoAnV2.Application.Common.Options;
 using DoAnV2.Application.Features.Batches.Batches.Commands;
 using DoAnV2.Application.Features.Processing.Dtos;
 using DoAnV2.Domain.Entities;
 using DoAnV2.Domain.Enums;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace DoAnV2.Application.Features.Processing.Commands;
 
 /// <summary>
 /// TASK 07 - Mục 7.3: Handler phân loại CÓ tách lô (gọi SC splitBatch).
-///   1. Validate lô tồn tại &amp; ở STAGE_PROCESSED (BR-12).
-///   2. Validate tổng quantity SubBatches không vượt ExpectedQuantity (BR-13).
-///   3. Với mỗi SubBatch:
-///        - Validate SubBatchCode unique.
-///        - Upload Metadata lên IPFS ➔ (MetadataURI, DataHash).
-///        - Tạo bản ghi SubBatch trong DB với CurrentStage = STAGE_SORTED.
-///   4. Gọi SC splitBatch(batchId, subBatchIds[], metadataURIs[], dataHashes[]).
-///   5. Cập nhật ParentBatch.CurrentStage = STAGE_SORTED.
 /// </summary>
 public class SplitBatchCommandHandler
     : IRequestHandler<SplitBatchCommand, SplitBatchResponseDto>
@@ -27,6 +21,8 @@ public class SplitBatchCommandHandler
     private readonly ICurrentUser _currentUser;
     private readonly IIpfsService _ipfs;
     private readonly IBlockchainService _blockchain;
+    private readonly IWalletService _walletService;
+    private readonly WalletOptions _walletOptions;
     private readonly ILogger<SplitBatchCommandHandler> _logger;
 
     public SplitBatchCommandHandler(
@@ -34,12 +30,16 @@ public class SplitBatchCommandHandler
         ICurrentUser currentUser,
         IIpfsService ipfs,
         IBlockchainService blockchain,
+        IWalletService walletService,
+        IOptions<WalletOptions> walletOptions,
         ILogger<SplitBatchCommandHandler> logger)
     {
         _uow = uow;
         _currentUser = currentUser;
         _ipfs = ipfs;
         _blockchain = blockchain;
+        _walletService = walletService;
+        _walletOptions = walletOptions.Value;
         _logger = logger;
     }
 
@@ -158,6 +158,17 @@ public class SplitBatchCommandHandler
         }
         await _uow.SaveChangesAsync(ct);
 
+        // ========== 6.5. Lấy và giải mã Private Key của ví Processor ==========
+        var processorUser = await _uow.Users.GetByIdAsync(processorId, ct)
+            ?? throw new NotFoundException($"Không tìm thấy thông tin tài khoản Processor {processorId}.");
+
+        string? signerPrivateKey = null;
+        if (!string.IsNullOrWhiteSpace(processorUser.EncryptedPrivateKey))
+        {
+            signerPrivateKey = _walletService.DecryptPrivateKey(
+                processorUser.EncryptedPrivateKey, _walletOptions.EncryptionKey);
+        }
+
         // ========== 7. Gọi SC: splitBatch(batchId, subBatchIds[], metadataURIs[], dataHashes[]) ==========
         string txHash;
         try
@@ -167,6 +178,7 @@ public class SplitBatchCommandHandler
                 subBatchIds: subBatchIds.ToArray(),
                 metadataURIs: metadataURIs.ToArray(),
                 dataHashes: dataHashes.ToArray(),
+                signerPrivateKey: signerPrivateKey,
                 ct: ct);
         }
         catch (Exception ex)

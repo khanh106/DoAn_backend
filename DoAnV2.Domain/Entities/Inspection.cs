@@ -25,4 +25,8 @@ public class Inspection : BaseEntity
     /// <summary>URI PDF/PNG trên IPFS.</summary>
     public string FileURI { get; set; } = null!;
     public string? Note { get; set; }
+
+    // ===== TASK 11: Lưu metadata IPFS để phục vụ Retry (BR-42) =====
+    public string? MetadataURI { get; set; }
+    public string? DataHash { get; set; }
 }

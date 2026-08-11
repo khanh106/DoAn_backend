@@ -109,3 +109,30 @@ public class GetMaterialsQueryHandler : IRequestHandler<GetMaterialsQuery, IRead
             e.DosagePerHa, e.Concentration, e.Supplier, e.NPKRatio, e.Note)).ToList();
     }
 }
+
+public class DeleteMaterialCommandHandler : IRequestHandler<DeleteMaterialCommand, bool>
+{
+    private readonly IUnitOfWork _uow;
+    private readonly ICurrentUser _currentUser;
+
+    public DeleteMaterialCommandHandler(IUnitOfWork uow, ICurrentUser currentUser)
+    {
+        _uow = uow;
+        _currentUser = currentUser;
+    }
+
+    public async Task<bool> Handle(DeleteMaterialCommand req, CancellationToken ct)
+    {
+        var processorId = ProcessorGuard.RequireProcessor(_currentUser);
+
+        var entity = await _uow.MaterialItems.GetByIdAsync(req.Id, ct)
+            ?? throw new NotFoundException($"Không tìm thấy vật tư {req.Id}.");
+
+        if (entity.ProcessorId != processorId)
+            throw new ForbiddenException("Bạn không có quyền xóa vật tư của Hợp tác xã khác.");
+
+        _uow.MaterialItems.Delete(entity);
+        await _uow.SaveChangesAsync(ct);
+        return true;
+    }
+}

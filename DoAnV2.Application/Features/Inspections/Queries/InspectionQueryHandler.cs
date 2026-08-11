@@ -47,6 +47,7 @@ public class InspectionQueryHandler
                 if (batch.ProcessorId != userId)
                     throw new ForbiddenException("Bạn không có quyền xem Batch của Processor khác.");
                 break;
+            case "RETAILER":
             case "ADMIN":
                 break;
             default:
@@ -97,6 +98,7 @@ public class InspectionQueryHandler
                 if (parentBatch.ProcessorId != userId)
                     throw new ForbiddenException("Bạn không có quyền xem SubBatch của Processor khác.");
                 break;
+            case "RETAILER":
             case "ADMIN":
                 break;
             default:

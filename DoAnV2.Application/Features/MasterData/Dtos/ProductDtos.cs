@@ -15,12 +15,13 @@ public record ProductDto(
 
 public record CreateProductRequest(
     Guid FruitTypeId,
-    string GroupName,
-    string ProductType,
-    string Variety,
+    string? GroupName,
+    string? ProductType,
+    string? Variety,
     string Name,
-    string ShortName,
+    string? ShortName,
     string? Description);
+
 
 public record UpdateProductRequest(
     string? GroupName,

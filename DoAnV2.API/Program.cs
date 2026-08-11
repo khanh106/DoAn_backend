@@ -102,6 +102,10 @@ builder.Services.AddSwaggerGen(c =>
         Version = "v1"
     });
 
+    // Tránh xung đột schemaId khi 2 DTO trùng tên ở 2 namespace khác nhau
+    // (ví dụ: Public.Dtos.FarmAreaDto vs MasterData.Dtos.FarmAreaDto)
+    c.CustomSchemaIds(t => t.FullName);
+
     // Bearer auth cho Swagger
     c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
     {
@@ -128,6 +132,16 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 });
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
 
 var app = builder.Build();
 
@@ -138,6 +152,58 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+// Tự động kiểm tra và thêm cột/bảng vào SQL Server nếu chưa có
+using (var scope = app.Services.CreateScope())
+{
+    try
+    {
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        db.Database.ExecuteSqlRaw(@"
+            IF NOT EXISTS (
+                SELECT 1 FROM sys.columns 
+                WHERE object_id = OBJECT_ID(N'users') 
+                AND name = N'cooperative_profile_info'
+            )
+            BEGIN
+                ALTER TABLE users ADD cooperative_profile_info NVARCHAR(MAX) NULL;
+            END
+
+            IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = N'distributors')
+            BEGIN
+                CREATE TABLE distributors (
+                    id UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,
+                    processor_id UNIQUEIDENTIFIER NOT NULL,
+                    retailer_id UNIQUEIDENTIFIER NULL,
+                    code NVARCHAR(100) NOT NULL,
+                    name NVARCHAR(255) NOT NULL,
+                    phone NVARCHAR(50) NOT NULL,
+                    email NVARCHAR(255) NULL,
+                    address NVARCHAR(500) NOT NULL,
+                    tax_code NVARCHAR(100) NULL,
+                    status NVARCHAR(50) NOT NULL DEFAULT 'ACTIVE',
+                    created_at DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
+                    updated_at DATETIME2 NULL,
+                    is_deleted BIT NOT NULL DEFAULT 0,
+                    CONSTRAINT FK_distributors_users_processor_id FOREIGN KEY (processor_id) REFERENCES users(id) ON DELETE NO ACTION,
+                    CONSTRAINT FK_distributors_users_retailer_id FOREIGN KEY (retailer_id) REFERENCES users(id) ON DELETE NO ACTION
+                );
+            END
+            ELSE IF NOT EXISTS (
+                SELECT 1 FROM sys.columns 
+                WHERE object_id = OBJECT_ID(N'distributors') 
+                AND name = N'retailer_id'
+            )
+            BEGIN
+                ALTER TABLE distributors ADD retailer_id UNIQUEIDENTIFIER NULL;
+            END
+        ");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"[DB Auto-Migration Note]: {ex.Message}");
+    }
+}
+
 // Global Exception Handler
 app.UseExceptionHandler(errApp =>
 {
@@ -145,10 +211,15 @@ app.UseExceptionHandler(errApp =>
     {
         var feature = ctx.Features.Get<IExceptionHandlerFeature>();
         var ex = feature?.Error;
+        if (ex != null)
+        {
+            Console.WriteLine($"[GLOBAL ERROR] {ex.GetType().Name}: {ex.Message}");
+        }
+
         var (status, msg) = ex switch
         {
             DomainException de => (de.StatusCode, de.Message),
-            _ => (500, "Lỗi hệ thống. Vui lòng thử lại sau.")
+            _ => (500, app.Environment.IsDevelopment() && ex != null ? ex.Message : "Lỗi hệ thống. Vui lòng thử lại sau.")
         };
 
         ctx.Response.StatusCode = status;
@@ -161,6 +232,7 @@ app.UseExceptionHandler(errApp =>
         });
     });
 });
+app.UseCors("AllowFrontend");
 
 app.UseHttpsRedirection();
 
@@ -170,3 +242,4 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+

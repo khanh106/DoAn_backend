@@ -26,6 +26,7 @@ public record UpdateFarmAreaCommand(
     string? SoilType,
     string? GPS,
     string? PlantingCode) : IRequest<FarmAreaDto>;
+    public record DeleteFarmAreaCommand(Guid Id) : IRequest<bool>;
 
 // ===== Queries =====
 public record GetFarmAreasQuery(

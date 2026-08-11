@@ -8,6 +8,7 @@ public class UnitOfWork : IUnitOfWork
     private readonly ApplicationDbContext _db;
 
     public UnitOfWork(
+        IProcessorWorkerRepository processorWorkers,
         ApplicationDbContext db,
         IUserRepository users,
         IBlockchainTransactionRepository blockchainTransactions,
@@ -25,8 +26,10 @@ public class UnitOfWork : IUnitOfWork
         IInspectionRepository inspections,
         IPackagingRepository packagings,
         IShipmentRepository shipments,
-        IQRCodeRepository qrCodes)
+        IQRCodeRepository qrCodes,
+        IDistributorRepository distributors)
     {
+        ProcessorWorkers = processorWorkers;
         _db = db;
         Users = users;
         BlockchainTransactions = blockchainTransactions;
@@ -45,8 +48,10 @@ public class UnitOfWork : IUnitOfWork
         Packagings = packagings;
         Shipments = shipments;
         QRCodes = qrCodes;
+        Distributors = distributors;
     }
 
+    public IProcessorWorkerRepository ProcessorWorkers { get; }
     public IUserRepository Users { get; }
     public IBlockchainTransactionRepository BlockchainTransactions { get; }
     public IFruitTypeRepository FruitTypes { get; }
@@ -64,6 +69,7 @@ public class UnitOfWork : IUnitOfWork
     public IPackagingRepository Packagings { get; }
     public IShipmentRepository Shipments { get; }
     public IQRCodeRepository QRCodes { get; }
+    public IDistributorRepository Distributors { get; }
 
     public Task<int> SaveChangesAsync(CancellationToken ct = default)
         => _db.SaveChangesAsync(ct);

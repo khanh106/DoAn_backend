@@ -145,3 +145,32 @@ public class GetFarmAreaByIdQueryHandler : IRequestHandler<GetFarmAreaByIdQuery,
             entity.CreatedAt, entity.UpdatedAt);
     }
 }
+
+// 👈 Dán toàn bộ class bên dưới vào cuối file FarmAreaHandlers.cs:
+
+public class DeleteFarmAreaCommandHandler : IRequestHandler<DeleteFarmAreaCommand, bool>
+{
+    private readonly IUnitOfWork _uow;
+    private readonly ICurrentUser _currentUser;
+
+    public DeleteFarmAreaCommandHandler(IUnitOfWork uow, ICurrentUser currentUser)
+    {
+        _uow = uow;
+        _currentUser = currentUser;
+    }
+
+    public async Task<bool> Handle(DeleteFarmAreaCommand req, CancellationToken ct)
+    {
+        var processorId = ProcessorGuard.RequireProcessor(_currentUser);
+
+        var entity = await _uow.FarmAreas.GetByIdAsync(req.Id, ct)
+            ?? throw new NotFoundException($"Không tìm thấy vùng trồng {req.Id}.");
+
+        if (entity.ProcessorId != processorId)
+            throw new ForbiddenException("Bạn không có quyền xóa vùng trồng của HTX/Doanh nghiệp khác.");
+
+        _uow.FarmAreas.Delete(entity);
+        await _uow.SaveChangesAsync(ct);
+        return true;
+    }
+}

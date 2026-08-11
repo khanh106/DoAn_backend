@@ -28,5 +28,7 @@ public record UpdateMaterialCommand(
     string? NPKRatio,
     string? Note) : IRequest<MaterialItemDto>;
 
+public record DeleteMaterialCommand(Guid Id) : IRequest<bool>;
+
 // ===== Queries =====
 public record GetMaterialsQuery : IRequest<IReadOnlyList<MaterialItemDto>>;

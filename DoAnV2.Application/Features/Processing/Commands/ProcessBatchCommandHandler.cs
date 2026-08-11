@@ -1,23 +1,20 @@
 using System.Text.Json;
 using DoAnV2.Application.Common.Exceptions;
 using DoAnV2.Application.Common.Interfaces;
+using DoAnV2.Application.Common.Options;
 using DoAnV2.Application.Features.Batches.Batches.Commands;
 using DoAnV2.Application.Features.Processing.Dtos;
 using DoAnV2.Domain.Entities;
 using DoAnV2.Domain.Enums;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using ProcessingEntity = DoAnV2.Domain.Entities.Processing;
 
 namespace DoAnV2.Application.Features.Processing.Commands;
 
 /// <summary>
 /// TASK 07 - Mục 7.1: Handler Processor ghi nhận công đoạn Sơ chế (gọi SC processBatch).
-///   1. Validate lô tồn tại &amp; đang ở STAGE_RECEIVED (BR-12).
-///   2. Validate Processor sở hữu Batch.
-///   3. Upload từng ảnh (nếu có) + Metadata JSON lên IPFS ➔ (MetadataURI, DataHash).
-///   4. Processor gọi SC processBatch(batchId, metadataURI, dataHash).
-///   5. Lưu bản ghi Processing + chuyển Batch.CurrentStage = STAGE_PROCESSED.
 /// </summary>
 public class ProcessBatchCommandHandler
     : IRequestHandler<ProcessBatchCommand, ProcessBatchResponseDto>
@@ -26,6 +23,8 @@ public class ProcessBatchCommandHandler
     private readonly ICurrentUser _currentUser;
     private readonly IIpfsService _ipfs;
     private readonly IBlockchainService _blockchain;
+    private readonly IWalletService _walletService;
+    private readonly WalletOptions _walletOptions;
     private readonly ILogger<ProcessBatchCommandHandler> _logger;
 
     public ProcessBatchCommandHandler(
@@ -33,12 +32,16 @@ public class ProcessBatchCommandHandler
         ICurrentUser currentUser,
         IIpfsService ipfs,
         IBlockchainService blockchain,
+        IWalletService walletService,
+        IOptions<WalletOptions> walletOptions,
         ILogger<ProcessBatchCommandHandler> logger)
     {
         _uow = uow;
         _currentUser = currentUser;
         _ipfs = ipfs;
         _blockchain = blockchain;
+        _walletService = walletService;
+        _walletOptions = walletOptions.Value;
         _logger = logger;
     }
 
@@ -100,6 +103,17 @@ public class ProcessBatchCommandHandler
             fileName: $"process-{batch.BatchCode}-{DateTime.UtcNow:yyyyMMddHHmmss}.json",
             ct: ct);
 
+        // ========== 4.5. Lấy và giải mã Private Key của ví Processor ==========
+        var processorUser = await _uow.Users.GetByIdAsync(processorId, ct)
+            ?? throw new NotFoundException($"Không tìm thấy thông tin tài khoản Processor {processorId}.");
+
+        string? signerPrivateKey = null;
+        if (!string.IsNullOrWhiteSpace(processorUser.EncryptedPrivateKey))
+        {
+            signerPrivateKey = _walletService.DecryptPrivateKey(
+                processorUser.EncryptedPrivateKey, _walletOptions.EncryptionKey);
+        }
+
         // ========== 5. Gọi SC: processBatch(batchId, metadataURI, dataHash) ==========
         string txHash;
         try
@@ -108,6 +122,7 @@ public class ProcessBatchCommandHandler
                 batchId: batch.Id.ToString(),
                 metadataURI: metadataURI,
                 dataHash: dataHash,
+                signerPrivateKey: signerPrivateKey,
                 ct: ct);
         }
         catch (Exception ex)

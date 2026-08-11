@@ -1,21 +1,18 @@
 using DoAnV2.Application.Common.Exceptions;
 using DoAnV2.Application.Common.Interfaces;
+using DoAnV2.Application.Common.Options;
 using DoAnV2.Application.Features.Batches.Batches.Commands;
 using DoAnV2.Application.Features.Shipments.Dtos;
 using DoAnV2.Domain.Entities;
 using DoAnV2.Domain.Enums;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace DoAnV2.Application.Features.Shipments.Commands;
 
 /// <summary>
 /// TASK 09 - Mục 9.1: Handler Processor tạo vận đơn cho SubBatch (gọi SC shipSub).
-///   1. Validate SubBatch tồn tại &amp; Processor sở hữu Parent &amp; SubBatch ở PACKAGED (BR-18).
-///   2. Validate Retailer tồn tại &amp; có role RETAILER &amp; APPROVED.
-///   3. Upload Metadata JSON vận chuyển lên IPFS ➔ (MetadataURI, DataHash).
-///   4. Processor gọi SC shipSub(subBatchId, metadataURI, dataHash).
-///   5. Lưu Shipment (AssetType=SUB) + cập nhật SubBatch.CurrentStage = STAGE_SHIPPING.
 /// </summary>
 public class ShipSubCommandHandler
     : IRequestHandler<ShipSubCommand, ShipmentResponseDto>
@@ -24,6 +21,8 @@ public class ShipSubCommandHandler
     private readonly ICurrentUser _currentUser;
     private readonly IIpfsService _ipfs;
     private readonly IBlockchainService _blockchain;
+    private readonly IWalletService _walletService;
+    private readonly WalletOptions _walletOptions;
     private readonly ILogger<ShipSubCommandHandler> _logger;
 
     public ShipSubCommandHandler(
@@ -31,12 +30,16 @@ public class ShipSubCommandHandler
         ICurrentUser currentUser,
         IIpfsService ipfs,
         IBlockchainService blockchain,
+        IWalletService walletService,
+        IOptions<WalletOptions> walletOptions,
         ILogger<ShipSubCommandHandler> logger)
     {
         _uow = uow;
         _currentUser = currentUser;
         _ipfs = ipfs;
         _blockchain = blockchain;
+        _walletService = walletService;
+        _walletOptions = walletOptions.Value;
         _logger = logger;
     }
 
@@ -112,6 +115,17 @@ public class ShipSubCommandHandler
             fileName: $"ship-sub-{subBatch.SubBatchCode}-{now:yyyyMMddHHmmss}.json",
             ct: ct);
 
+        // ========== 4.5. Lấy và giải mã Private Key của ví Processor ==========
+        var processorUser = await _uow.Users.GetByIdAsync(processorId, ct)
+            ?? throw new NotFoundException($"Không tìm thấy thông tin tài khoản Processor {processorId}.");
+
+        string? signerPrivateKey = null;
+        if (!string.IsNullOrWhiteSpace(processorUser.EncryptedPrivateKey))
+        {
+            signerPrivateKey = _walletService.DecryptPrivateKey(
+                processorUser.EncryptedPrivateKey, _walletOptions.EncryptionKey);
+        }
+
         // ========== 5. Gọi SC: shipSub(subBatchId, metadataURI, dataHash) ==========
         string txHash;
         try
@@ -120,6 +134,7 @@ public class ShipSubCommandHandler
                 subBatchId: subBatch.Id.ToString(),
                 metadataURI: metadataURI,
                 dataHash: dataHash,
+                signerPrivateKey: signerPrivateKey,
                 ct: ct);
         }
         catch (Exception ex)

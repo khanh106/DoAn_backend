@@ -8,4 +8,5 @@ public interface IMaterialItemRepository
     Task<IReadOnlyList<MaterialItem>> GetByProcessorIdAsync(Guid processorId, CancellationToken ct = default);
     Task AddAsync(MaterialItem entity, CancellationToken ct = default);
     void Update(MaterialItem entity);
+    void Delete(MaterialItem entity);
 }

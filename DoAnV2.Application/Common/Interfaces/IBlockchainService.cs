@@ -62,6 +62,7 @@ public interface IBlockchainService
         string fruitType,
         string metadataURI,
         string dataHash,
+        string? signerPrivateKey = null,
         CancellationToken ct = default);
 
     Task<string> AssignWorkerAsync(
@@ -94,12 +95,14 @@ public interface IBlockchainService
         string batchId,
         string metadataURI,
         string dataHash,
+        string? signerPrivateKey = null,
         CancellationToken ct = default);
 
     Task<string> ProcessBatchAsync(
         string batchId,
         string metadataURI,
         string dataHash,
+        string? signerPrivateKey = null,
         CancellationToken ct = default);
 
     // ============================================================
@@ -110,6 +113,7 @@ public interface IBlockchainService
         string batchId,
         string metadataURI,
         string dataHash,
+        string? signerPrivateKey = null,
         CancellationToken ct = default);
 
     Task<string> SplitBatchAsync(
@@ -117,6 +121,7 @@ public interface IBlockchainService
         string[] subBatchIds,
         string[] metadataURIs,
         string[] dataHashes,
+        string? signerPrivateKey = null,
         CancellationToken ct = default);
 
     // ============================================================
@@ -128,6 +133,7 @@ public interface IBlockchainService
         bool passed,
         string metadataURI,
         string dataHash,
+        string? signerPrivateKey = null,
         CancellationToken ct = default);
 
     Task<string> InspectSubAsync(
@@ -135,6 +141,7 @@ public interface IBlockchainService
         bool passed,
         string metadataURI,
         string dataHash,
+        string? signerPrivateKey = null,
         CancellationToken ct = default);
 
     // ============================================================
@@ -145,12 +152,14 @@ public interface IBlockchainService
         string batchId,
         string metadataURI,
         string dataHash,
+        string? signerPrivateKey = null,
         CancellationToken ct = default);
 
     Task<string> PackageSubAsync(
         string subBatchId,
         string metadataURI,
         string dataHash,
+        string? signerPrivateKey = null,
         CancellationToken ct = default);
 
     // ============================================================
@@ -161,12 +170,14 @@ public interface IBlockchainService
         string batchId,
         string metadataURI,
         string dataHash,
+        string? signerPrivateKey = null,
         CancellationToken ct = default);
 
     Task<string> ShipSubAsync(
         string subBatchId,
         string metadataURI,
         string dataHash,
+        string? signerPrivateKey = null,
         CancellationToken ct = default);
 
     // ============================================================

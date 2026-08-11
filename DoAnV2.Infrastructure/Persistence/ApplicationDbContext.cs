@@ -30,6 +30,8 @@ public class ApplicationDbContext : DbContext
     public DbSet<Shipment> Shipments => Set<Shipment>();
     public DbSet<QRCode> QRCodes => Set<QRCode>();
     public DbSet<BlockchainTransaction> BlockchainTransactions => Set<BlockchainTransaction>();
+    public DbSet<ProcessorWorker> ProcessorWorkers => Set<ProcessorWorker>();
+    public DbSet<Distributor> Distributors => Set<Distributor>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -80,6 +82,13 @@ public class ApplicationDbContext : DbContext
             e.HasOne(x => x.User).WithMany(u => u.BatchWorkers).HasForeignKey(x => x.UserId);
             e.HasIndex(x => new { x.BatchId, x.UserId }).IsUnique();
         });
+        b.Entity<ProcessorWorker>(e =>
+        {
+            e.HasOne(x => x.Processor).WithMany().HasForeignKey(x => x.ProcessorId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne(x => x.Worker).WithMany().HasForeignKey(x => x.WorkerId).OnDelete(DeleteBehavior.Restrict);
+            e.HasIndex(x => new { x.ProcessorId, x.WorkerId }).IsUnique();
+        });
+
 
         b.Entity<BlockchainTransaction>(e =>
         {

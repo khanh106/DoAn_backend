@@ -14,4 +14,5 @@ public interface IFarmAreaRepository
         CancellationToken ct = default);
     Task AddAsync(FarmArea entity, CancellationToken ct = default);
     void Update(FarmArea entity);
+     void Delete(FarmArea entity);
 }

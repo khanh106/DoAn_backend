@@ -31,11 +31,11 @@ public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand,
         var entity = new Product
         {
             FruitTypeId = fruitType.Id,
-            GroupName = req.GroupName.Trim(),
-            ProductType = req.ProductType.Trim(),
-            Variety = req.Variety.Trim(),
+            GroupName = string.IsNullOrWhiteSpace(req.GroupName) ? "Trái cây tươi đóng gói" : req.GroupName.Trim(),
+            ProductType = string.IsNullOrWhiteSpace(req.ProductType) ? "FRESH" : req.ProductType.Trim(),
+            Variety = string.IsNullOrWhiteSpace(req.Variety) ? (fruitType.Name ?? "N/A") : req.Variety.Trim(),
             Name = req.Name.Trim(),
-            ShortName = req.ShortName.Trim(),
+            ShortName = string.IsNullOrWhiteSpace(req.ShortName) ? req.Name.Trim() : req.ShortName.Trim(),
             Description = req.Description,
             Status = "ACTIVE",
         };

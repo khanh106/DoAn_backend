@@ -5,6 +5,7 @@ using DoAnV2.Application.Features.Auth.Commands;
 using DoAnV2.Application.Features.Auth.Dtos;
 using DoAnV2.Domain.Enums;
 using MediatR;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace DoAnV2.Application.Features.Auth.Handlers;
@@ -14,7 +15,6 @@ namespace DoAnV2.Application.Features.Auth.Handlers;
 /// Nếu APPROVE + có WalletAddress ➔
 ///   1. Gọi IRoleOnChainAssigner.GrantRoleAsync (granted role on-chain).
 ///   2. Gọi IBlockchainService.FundFarmerWalletAsync (cấp 0.003 ETH gas fee).
-/// BR-46.2: Ví Farmer được Admin tài trợ gas fee.
 /// </summary>
 public class ApproveUserCommandHandler : IRequestHandler<ApproveUserCommand, PendingUserDto>
 {
@@ -22,17 +22,20 @@ public class ApproveUserCommandHandler : IRequestHandler<ApproveUserCommand, Pen
     private readonly IRoleOnChainAssigner _onChain;
     private readonly IBlockchainService _blockchain;
     private readonly WalletFundingOptions _walletFundingOptions;
+    private readonly ILogger<ApproveUserCommandHandler> _logger;
 
     public ApproveUserCommandHandler(
         IUnitOfWork uow,
         IRoleOnChainAssigner onChain,
         IBlockchainService blockchain,
-        IOptions<WalletFundingOptions> walletFundingOptions)
+        IOptions<WalletFundingOptions> walletFundingOptions,
+        ILogger<ApproveUserCommandHandler> logger)
     {
         _uow = uow;
         _onChain = onChain;
         _blockchain = blockchain;
         _walletFundingOptions = walletFundingOptions.Value;
+        _logger = logger;
     }
 
     public async Task<PendingUserDto> Handle(ApproveUserCommand req, CancellationToken ct)
@@ -47,25 +50,35 @@ public class ApproveUserCommandHandler : IRequestHandler<ApproveUserCommand, Pen
         var user = await _uow.Users.GetByIdAsync(req.UserId, ct)
             ?? throw new NotFoundException($"Không tìm thấy user {req.UserId}.");
 
-        if (action == "APPROVE")
+               if (action == "APPROVE")
         {
             user.Status = UserStatus.APPROVED;
 
-            // FARMER có WalletAddress ➔ (1) grant role on-chain + (2) cấp gas fee.
-            if (!string.IsNullOrWhiteSpace(user.WalletAddress)
-                && user.Role?.RoleName == RoleType.FARMER)
+            // Nếu User có WalletAddress (HTX đăng ký ví MetaMask hoặc Nông dân) ➔ Thực hiện cấp Role trên Blockchain
+            if (!string.IsNullOrWhiteSpace(user.WalletAddress))
             {
-                // 1. Grant role on-chain (TASK 03 sẽ thay bằng Nethereum)
+                // 1. Cấp role tương ứng trên Smart Contract (FARMER_ROLE, PROCESSOR_ROLE, RETAILER_ROLE)
+                var roleNameOnChain = user.Role?.RoleName.ToString() ?? "FARMER";
                 await _onChain.GrantRoleAsync(
-                    roleName: "FARMER_ROLE",
+                    roleName: roleNameOnChain,
                     walletAddress: user.WalletAddress!,
                     ct: ct);
 
-                // 2. Cấp ETH gas fee (BR-46.2 / yêu cầu user)
-                await _blockchain.FundFarmerWalletAsync(
-                    farmerWalletAddress: user.WalletAddress!,
-                    amountEth: _walletFundingOptions.FundAmountEth,
-                    ct: ct);
+                // 2. Nếu là FARMER hoặc RETAILER ➔ Cấp thêm ETH gas fee ban đầu cho ví Custodial
+                if (user.Role?.RoleName == RoleType.FARMER || user.Role?.RoleName == RoleType.RETAILER)
+                {
+                    try
+                    {
+                        await _blockchain.FundFarmerWalletAsync(
+                            farmerWalletAddress: user.WalletAddress!,
+                            amountEth: _walletFundingOptions.FundAmountEth,
+                            ct: ct);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Cấp ETH gas fee thất bại cho ví {Wallet}. Lý do: {Message}", user.WalletAddress, ex.Message);
+                    }
+                }
             }
         }
         else

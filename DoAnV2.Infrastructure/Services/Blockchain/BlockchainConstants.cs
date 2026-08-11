@@ -10,14 +10,22 @@ public static class BlockchainRoleNames
     public const string Processor = "PROCESSOR_ROLE";
     public const string Retailer = "RETAILER_ROLE";
 
-    /// <summary>Map tên role app (FARMER/PROCESSOR/RETAILER) ➔ tên hằng số SC.</summary>
-    public static string FromAppRole(string appRoleName) => appRoleName?.ToUpperInvariant() switch
+    /// <summary>Map tên role app (FARMER/PROCESSOR/RETAILER/FARMER_ROLE) ➔ tên hằng số SC.</summary>
+    public static string FromAppRole(string appRoleName)
     {
-        "FARMER" => Farmer,
-        "PROCESSOR" => Processor,
-        "RETAILER" => Retailer,
-        _ => appRoleName?.ToUpperInvariant() + "_ROLE",
-    };
+        if (string.IsNullOrWhiteSpace(appRoleName)) 
+            return Farmer;
+
+        var upper = appRoleName.Trim().ToUpperInvariant();
+        
+        return upper switch
+        {
+            "FARMER" or "FARMER_ROLE" => Farmer,
+            "PROCESSOR" or "PROCESSOR_ROLE" => Processor,
+            "RETAILER" or "RETAILER_ROLE" => Retailer,
+            _ => upper.EndsWith("_ROLE", StringComparison.OrdinalIgnoreCase) ? upper : upper + "_ROLE"
+        };
+    }
 }
 
 /// <summary>
@@ -61,8 +69,7 @@ public static class BlockchainFunctionNames
 }
 
 /// <summary>
-/// Sentinel contractAddress dùng cho các giao dịch ETH transfer
-/// (không qua Smart Contract).
+/// Sentinel contractAddress dùng cho các giao dịch ETH transfer (không qua Smart Contract).
 /// </summary>
 public static class EthTransferSentinel
 {

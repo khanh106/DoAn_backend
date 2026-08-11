@@ -7,9 +7,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace DoAnV2.API.Controllers;
 
-/// <summary>
-/// TASK 05 - Mục 5.1: API Tạo Lô sản xuất + xem chi tiết Batch.
-/// </summary>
 [ApiController]
 [Route("api/v1/processor/batches")]
 [Authorize(Policy = "RequireProcessor")]
@@ -20,6 +17,14 @@ public class BatchController : ControllerBase
     public BatchController(IMediator mediator)
     {
         _mediator = mediator;
+    }
+
+    /// <summary>GET /api/v1/processor/batches - Lấy danh sách Lô sản xuất / Kế hoạch của HTX.</summary>
+    [HttpGet]
+    public async Task<ActionResult<IReadOnlyList<BatchDto>>> GetBatches(CancellationToken ct)
+    {
+        var result = await _mediator.Send(new GetBatchesQuery(), ct);
+        return Ok(result);
     }
 
     /// <summary>POST /api/v1/processor/batches - Tạo lô sản xuất + upload IPFS + gọi SC.</summary>
