@@ -26,7 +26,9 @@ public class BatchRepository : IBatchRepository
             .Include(x => x.FarmArea)
             .Include(x => x.RepresentativeWorker)
             .Include(x => x.Processor)
-            .Where(x => x.ProcessorId == processorId)
+            .Include(x => x.BlockchainTransactions)
+            .Where(x => x.ProcessorId == processorId &&
+                       x.BlockchainTransactions.Any(t => t.FunctionName == "createBatch" && t.Status == TransactionStatus.SUCCESS))
             .OrderByDescending(x => x.CreatedAt)
             .ToListAsync(ct);
 

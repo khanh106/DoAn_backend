@@ -30,7 +30,6 @@ public class Batch : BaseEntity
     public string? MetadataURI { get; set; }
     public string? DataHash { get; set; }
     public string? BlockchainBatchId { get; set; }
-
     public Guid ProcessorId { get; set; }
     public User Processor { get; set; } = null!;
 

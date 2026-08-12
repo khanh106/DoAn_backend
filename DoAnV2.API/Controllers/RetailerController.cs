@@ -1,3 +1,4 @@
+using DoAnV2.Application.Features.QRCodes.Dtos;
 using DoAnV2.Application.Features.Shipments.Commands;
 using DoAnV2.Application.Features.Shipments.Dtos;
 using DoAnV2.Application.Features.Shipments.Queries;
@@ -63,6 +64,20 @@ public class RetailerController : ControllerBase
         CancellationToken ct)
     {
         var result = await _mediator.Send(new ReadyForSaleCommand(id), ct);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// GET /api/v1/retailer/shipments/{id}/qrcodes
+    /// Lấy danh sách QR code đã được HTX (Processor) tạo sẵn cho lô hàng của vận đơn.
+    /// Retailer chỉ xem được QR code của vận đơn thuộc về mình.
+    /// </summary>
+    [HttpGet("api/v1/retailer/shipments/{id:guid}/qrcodes")]
+    public async Task<ActionResult<IReadOnlyList<QRCodeInfoDto>>> GetQRCodesForShipment(
+        [FromRoute] Guid id,
+        CancellationToken ct)
+    {
+        var result = await _mediator.Send(new GetQRCodesForShipmentQuery(id), ct);
         return Ok(result);
     }
 }

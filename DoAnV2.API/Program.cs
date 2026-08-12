@@ -73,11 +73,16 @@ builder.Services.AddAuthorization(opts =>
 
 // ========== MVC + Swagger ==========
 builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+    })
     .ConfigureApiBehaviorOptions(opts =>
     {
-        // Trả l�i validation đúng format JSON
+        // Trả li validation đúng format JSON
         opts.InvalidModelStateResponseFactory = context =>
         {
+
             var errors = context.ModelState
                 .Where(x => x.Value?.Errors.Count > 0)
                 .ToDictionary(

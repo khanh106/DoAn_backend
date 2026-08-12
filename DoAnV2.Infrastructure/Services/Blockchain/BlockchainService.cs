@@ -422,8 +422,8 @@ public class BlockchainService : IBlockchainService
     // PUBLIC API: RETAILER
     // =============================================================
 
-    public Task<string> ReceiveParentAsync(
-        string batchId, string metadataURI, string dataHash, CancellationToken ct = default)
+        public Task<string> ReceiveParentAsync(
+        string batchId, string metadataURI, string dataHash, string? signerPrivateKey = null, CancellationToken ct = default)
         => SendSimpleAsync(
             BlockchainFunctionNames.ReceiveParent, batchId, null,
             () => new object[]
@@ -432,10 +432,12 @@ public class BlockchainService : IBlockchainService
                 metadataURI,
                 SmartContractIds.HexToBytes32(dataHash) ?? SmartContractIds.CodeToBytes32(dataHash),
             },
+            signerPrivateKey: signerPrivateKey, // <-- Bổ sung truyền key ký
+            signerAddress: !string.IsNullOrWhiteSpace(signerPrivateKey) ? new EthECKey(signerPrivateKey).GetPublicAddress() : null, // <-- Bổ sung địa chỉ ví tương ứng
             ct: ct);
 
     public Task<string> ReceiveSubAsync(
-        string subBatchId, string metadataURI, string dataHash, CancellationToken ct = default)
+        string subBatchId, string metadataURI, string dataHash, string? signerPrivateKey = null, CancellationToken ct = default)
         => SendSimpleAsync(
             BlockchainFunctionNames.ReceiveSub, null, subBatchId,
             () => new object[]
@@ -444,10 +446,12 @@ public class BlockchainService : IBlockchainService
                 metadataURI,
                 SmartContractIds.HexToBytes32(dataHash) ?? SmartContractIds.CodeToBytes32(dataHash),
             },
+            signerPrivateKey: signerPrivateKey, // <-- Bổ sung truyền key ký
+            signerAddress: !string.IsNullOrWhiteSpace(signerPrivateKey) ? new EthECKey(signerPrivateKey).GetPublicAddress() : null, // <-- Bổ sung địa chỉ ví tương ứng
             ct: ct);
 
     public Task<string> ReadyParentAsync(
-        string batchId, string metadataURI, string dataHash, CancellationToken ct = default)
+        string batchId, string metadataURI, string dataHash, string? signerPrivateKey = null, CancellationToken ct = default)
         => SendSimpleAsync(
             BlockchainFunctionNames.ReadyParent, batchId, null,
             () => new object[]
@@ -456,10 +460,12 @@ public class BlockchainService : IBlockchainService
                 metadataURI,
                 SmartContractIds.HexToBytes32(dataHash) ?? SmartContractIds.CodeToBytes32(dataHash),
             },
+            signerPrivateKey: signerPrivateKey, // <-- Bổ sung truyền key ký
+            signerAddress: !string.IsNullOrWhiteSpace(signerPrivateKey) ? new EthECKey(signerPrivateKey).GetPublicAddress() : null, // <-- Bổ sung địa chỉ ví tương ứng
             ct: ct);
 
     public Task<string> ReadySubAsync(
-        string subBatchId, string metadataURI, string dataHash, CancellationToken ct = default)
+        string subBatchId, string metadataURI, string dataHash, string? signerPrivateKey = null, CancellationToken ct = default)
         => SendSimpleAsync(
             BlockchainFunctionNames.ReadySub, null, subBatchId,
             () => new object[]
@@ -468,7 +474,10 @@ public class BlockchainService : IBlockchainService
                 metadataURI,
                 SmartContractIds.HexToBytes32(dataHash) ?? SmartContractIds.CodeToBytes32(dataHash),
             },
+            signerPrivateKey: signerPrivateKey, // <-- Bổ sung truyền key ký
+            signerAddress: !string.IsNullOrWhiteSpace(signerPrivateKey) ? new EthECKey(signerPrivateKey).GetPublicAddress() : null, // <-- Bổ sung địa chỉ ví tương ứng
             ct: ct);
+
 
     // =============================================================
     // CORE: GỬI TRANSACTION QUA Nethereum + GHI LOG
@@ -630,19 +639,39 @@ public class BlockchainService : IBlockchainService
     /// nhưng trên một số testnet estimate lỗi nên ta hard-code theo pattern).
     /// </summary>
     private static HexBigInteger GetGasForFunction(string fn)
-{
-    // Đặt hạn mức Gas Limit rộng rãi cho từng hàm Smart Contract
-    // (Lưu ý: Lượng gas dư thừa không dùng hết sẽ được EVM tự động hoàn trả lại ví)
-    var g = fn switch
     {
-        nameof(BlockchainFunctionNames.CreateBatch) => 800_000,
-        nameof(BlockchainFunctionNames.SplitBatch) => 1_500_000,
-        nameof(BlockchainFunctionNames.AssignWorker) => 500_000,
-        nameof(BlockchainFunctionNames.SetRepresentative) => 500_000,
-        _ => 500_000,
-    };
-    return new HexBigInteger(g);
-}
+        // Đặt hạn mức Gas Limit rộng rãi cho từng hàm Smart Contract
+        // (Lưu ý: Lượng gas dư thừa không dùng hết sẽ được EVM tự động hoàn trả lại ví)
+        //
+        // ⚠️ FIX: Dùng giá trị string thực tế thay vì nameof()
+        //    nameof(BlockchainFunctionNames.CreateBatch) = "CreateBatch" (C hoa)
+        //    Nhưng fn nhận vào = "createBatch" (c thường)
+        //    => Switch KHÔNG BAO GIỜ match => luôn rơi vào default 500k => OUT OF GAS!
+        var g = fn switch
+        {
+            BlockchainFunctionNames.CreateBatch       => 800_000,   // "createBatch"
+            BlockchainFunctionNames.SplitBatch         => 1_500_000, // "splitBatch"
+            BlockchainFunctionNames.AssignWorker       => 500_000,   // "assignWorker"
+            BlockchainFunctionNames.SetRepresentative  => 500_000,   // "setRepresentative"
+            BlockchainFunctionNames.HarvestBatch       => 500_000,   // "harvestBatch"
+            BlockchainFunctionNames.ReceiveBatch       => 500_000,   // "receiveBatch"
+            BlockchainFunctionNames.ProcessBatch       => 500_000,   // "processBatch"
+            BlockchainFunctionNames.ClassifyOnlyBatch  => 500_000,   // "classifyOnlyBatch"
+            BlockchainFunctionNames.InspectParent      => 500_000,   // "inspectParent"
+            BlockchainFunctionNames.InspectSub         => 500_000,   // "inspectSub"
+            BlockchainFunctionNames.PackageParent      => 500_000,   // "packageParent"
+            BlockchainFunctionNames.PackageSub         => 500_000,   // "packageSub"
+            BlockchainFunctionNames.ShipParent         => 500_000,   // "shipParent"
+            BlockchainFunctionNames.ShipSub            => 500_000,   // "shipSub"
+            BlockchainFunctionNames.ReceiveParent      => 500_000,   // "receiveParent"
+            BlockchainFunctionNames.ReceiveSub         => 500_000,   // "receiveSub"
+            BlockchainFunctionNames.ReadyParent        => 500_000,   // "readyParent"
+            BlockchainFunctionNames.ReadySub           => 500_000,   // "readySub"
+            _ => 500_000,
+        };
+        return new HexBigInteger(g);
+    }
+
 
 
     private static Guid? TryParseGuid(string? s)

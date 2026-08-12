@@ -1,11 +1,13 @@
 using DoAnV2.Application.Common.Exceptions;
 using DoAnV2.Application.Common.Interfaces;
+using DoAnV2.Application.Common.Options;
 using DoAnV2.Application.Features.Batches.Batches.Commands;
 using DoAnV2.Application.Features.Shipments.Dtos;
 using DoAnV2.Domain.Entities;
 using DoAnV2.Domain.Enums;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace DoAnV2.Application.Features.Shipments.Commands;
 
@@ -24,6 +26,8 @@ public class ReceiveShipmentCommandHandler
     private readonly ICurrentUser _currentUser;
     private readonly IIpfsService _ipfs;
     private readonly IBlockchainService _blockchain;
+    private readonly IWalletService _walletService;
+    private readonly WalletOptions _walletOptions;
     private readonly ILogger<ReceiveShipmentCommandHandler> _logger;
 
     public ReceiveShipmentCommandHandler(
@@ -31,12 +35,16 @@ public class ReceiveShipmentCommandHandler
         ICurrentUser currentUser,
         IIpfsService ipfs,
         IBlockchainService blockchain,
+        IWalletService walletService,
+        IOptions<WalletOptions> walletOptions,
         ILogger<ReceiveShipmentCommandHandler> logger)
     {
         _uow = uow;
         _currentUser = currentUser;
         _ipfs = ipfs;
         _blockchain = blockchain;
+        _walletService = walletService;
+        _walletOptions = walletOptions.Value;
         _logger = logger;
     }
 
@@ -54,6 +62,17 @@ public class ReceiveShipmentCommandHandler
 
         if (shipment.ReceivedDate.HasValue)
             throw new ValidationException("Shipment đã được xác nhận tiếp nhận trước đó.");
+
+        // ========== Lấy và giải mã Private Key của ví Retailer ==========
+        var retailerUser = await _uow.Users.GetByIdAsync(retailerId, ct)
+            ?? throw new NotFoundException($"Không tìm thấy thông tin tài khoản Retailer {retailerId}.");
+
+        string? signerPrivateKey = null;
+        if (!string.IsNullOrWhiteSpace(retailerUser.EncryptedPrivateKey))
+        {
+            signerPrivateKey = _walletService.DecryptPrivateKey(
+                retailerUser.EncryptedPrivateKey, _walletOptions.EncryptionKey);
+        }
 
         // ========== 2. Xác định asset + validate stage (BR-18) ==========
         string? batchCode;
@@ -103,6 +122,7 @@ public class ReceiveShipmentCommandHandler
                         batchId: batch.Id.ToString(),
                         metadataURI: receiveMetaUri,
                         dataHash: receiveHash,
+                        signerPrivateKey: signerPrivateKey,
                         ct: ct);
                 }
                 catch (Exception ex)
@@ -191,6 +211,7 @@ public class ReceiveShipmentCommandHandler
                         subBatchId: subBatch.Id.ToString(),
                         metadataURI: receiveMetaUri,
                         dataHash: receiveHash,
+                        signerPrivateKey: signerPrivateKey,
                         ct: ct);
                 }
                 catch (Exception ex)

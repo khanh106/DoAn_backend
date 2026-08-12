@@ -119,19 +119,30 @@ public class IpfsService : IIpfsService
                 $"Filebase upload failed ({(int?)ex.StatusCode} {ex.ErrorCode}): {ex.Message}", ex);
         }
 
-        // 4. Lấy CID (Filebase pin lên IPFS rồi set vào metadata)
+                // 4. Lấy CID (Filebase pin lên IPFS rồi set vào metadata)
         var cid = await ExtractCidFromResponseAsync(key, ct);
 
-        // 5. Trả về URI (gateway URL + CID)
-        var fileUri = !string.IsNullOrWhiteSpace(_options.GatewayUrl)
-            ? $"{_options.GatewayUrl.TrimEnd('/')}/{cid}"
-            : $"ipfs://{cid}";
+        // 5. Trả về URI
+        string fileUri;
+        if (!string.IsNullOrWhiteSpace(cid))
+        {
+            // Có CID thật → dùng IPFS gateway
+            fileUri = !string.IsNullOrWhiteSpace(_options.GatewayUrl)
+                ? $"{_options.GatewayUrl.TrimEnd('/')}/{cid}"
+                : $"ipfs://{cid}";
+        }
+        else
+        {
+            // Không có CID → dùng S3 key qua backend proxy
+            fileUri = $"/api/v1/ipfs/{key}";
+        }
 
         _logger.LogInformation(
-            "IPFS upload OK: key={Key}, cid={Cid}, size={Size}, sha256={Hash}",
-            key, cid, bytes.Length, dataHash);
+            "IPFS upload OK: key={Key}, cid={Cid}, size={Size}, sha256={Hash}, uri={Uri}",
+            key, cid ?? "(fallback-proxy)", bytes.Length, dataHash, fileUri);
 
         return (fileUri, dataHash);
+
     }
 
     // ============ Helpers ============
@@ -146,45 +157,72 @@ public class IpfsService : IIpfsService
     /// Vì PutObjectResponse không trả về Metadata, ta buộc phải HEAD
     /// object vừa upload để đọc metadata.
     /// </summary>
-    private async Task<string> ExtractCidFromResponseAsync(string key, CancellationToken ct)
+    private async Task<string?> ExtractCidFromResponseAsync(string key, CancellationToken ct)
+
+{
+    // Filebase trả CID trong metadata với key "cid" (AWS SDK tự bỏ prefix "x-amz-meta-").
+    // Thử tối đa 8 lần với delay tăng dần (Filebase cần thời gian pin).
+    for (int i = 0; i < 8; i++)
     {
-        // Filebase thường set CID với key "cid" trong user metadata.
-        string[] candidateKeys = { "cid", "ipfs-cid", "x-amz-meta-cid", "x-amz-meta-ipfs-cid" };
-
-        // Thử tối đa 5 lần (đợi Filebase async IPFS pinning hoàn tất)
-        for (int i = 0; i < 5; i++)
+        try
         {
-            try
+            var head = await _s3.GetObjectMetadataAsync(new GetObjectMetadataRequest
             {
-                var head = await _s3.GetObjectMetadataAsync(new GetObjectMetadataRequest
-                {
-                    BucketName = _options.Bucket,
-                    Key = key,
-                }, ct);
+                BucketName = _options.Bucket,
+                Key = key,
+            }, ct);
 
-                if (head.Metadata is not null)
+            // AWS SDK .NET: head.Metadata["cid"] tự động map từ "x-amz-meta-cid"
+            if (head.Metadata is not null)
+            {
+                // Duyệt tất cả metadata keys mà Filebase có thể trả về
+                foreach (var metaKey in head.Metadata.Keys)
                 {
-                    foreach (var k in candidateKeys)
-                    {
-                        var val = head.Metadata[k];
-                        if (!string.IsNullOrWhiteSpace(val))
-                            return val;
-                    }
+                    _logger.LogDebug("Metadata key: {Key} = {Value}", metaKey, head.Metadata[metaKey]);
+                }
+
+                // Ưu tiên key "cid" (Filebase chuẩn)
+                var cid = head.Metadata["cid"];
+                if (!string.IsNullOrWhiteSpace(cid))
+                    return cid;
+
+                // Fallback: thử các key khác
+                string[] fallbackKeys = { "ipfs-cid", "x-amz-meta-cid" };
+                foreach (var k in fallbackKeys)
+                {
+                    var val = head.Metadata[k];
+                    if (!string.IsNullOrWhiteSpace(val))
+                        return val;
                 }
             }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Lần {Attempt}: Không đọc được CID từ metadata object (key={Key}).", i + 1, key);
-            }
 
-            await Task.Delay(500, ct);
+            // Kiểm tra cả ETag - một số trường hợp Filebase dùng ETag = CID
+            if (!string.IsNullOrWhiteSpace(head.ETag))
+            {
+                var etag = head.ETag.Trim('"');
+                // CID v1 bắt đầu bằng "bafy" hoặc "bafk"
+                if (etag.StartsWith("bafy") || etag.StartsWith("bafk") || etag.StartsWith("Qm"))
+                {
+                    _logger.LogInformation("Lấy CID từ ETag: {CID}", etag);
+                    return etag;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Lần {Attempt}: Không đọc được CID từ metadata (key={Key}).", i + 1, key);
         }
 
-        // Fallback CID phát sinh từ SHA-256 key để hệ thống tiếp tục vận hành mà không bị nghẽn
-        var fallbackCid = "bafybeih" + ComputeSha256Hex(Encoding.UTF8.GetBytes(key))[..32];
-        _logger.LogWarning("Filebase chưa gắn CID metadata cho key '{Key}'. Sử dụng fallback CID: {FallbackCid}", key, fallbackCid);
-        return fallbackCid;
+        // Delay tăng dần: 500ms, 1s, 1.5s, 2s, ...
+        await Task.Delay((i + 1) * 500, ct);
     }
+
+        // Fallback: trả về null để caller biết không có CID → dùng S3 key thay thế
+    _logger.LogWarning("Filebase không trả CID cho key '{Key}' sau 8 lần thử. Sẽ dùng S3 key làm fallback.", key);
+    return null;
+}
+
+
 
     private static string SanitizeFileName(string name)
     {

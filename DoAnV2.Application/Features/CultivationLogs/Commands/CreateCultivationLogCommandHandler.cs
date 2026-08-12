@@ -26,6 +26,12 @@ public class CreateCultivationLogCommandHandler
         "Bón phân",
         "Phun thuốc",
         "Chăm sóc",
+        "Cắt tỉa",
+        "Kiểm tra sâu bệnh",
+        "Làm cỏ",
+        "Khác",
+        "Phun thuốc bảo vệ thực vật",
+        "Làm cỏ & Cắt tỉa",
     };
 
     private readonly IUnitOfWork _uow;
@@ -68,6 +74,12 @@ public class CreateCultivationLogCommandHandler
         // ========== 2. Validate Batch + Permission ==========
         var batch = await _uow.Batches.GetByIdAsync(req.BatchId, ct)
             ?? throw new NotFoundException($"Không tìm thấy Batch {req.BatchId}.");
+
+        if (batch.CurrentStage != DoAnV2.Domain.Enums.BatchStage.STAGE_PLANTING)
+        {
+            throw new ValidationException(
+                "Lô sản xuất đã hoàn thành thu hoạch hoặc đang ở giai đoạn sau thu hoạch. Không được phép ghi nhật ký canh tác.");
+        }
 
         string userFullName = string.Empty;
         if (role == "FARMER")

@@ -184,27 +184,32 @@ public interface IBlockchainService
     // RETAILER (TASK 03)
     // ============================================================
 
-    Task<string> ReceiveParentAsync(
+        Task<string> ReceiveParentAsync(
         string batchId,
         string metadataURI,
         string dataHash,
+        string? signerPrivateKey = null, 
         CancellationToken ct = default);
 
     Task<string> ReceiveSubAsync(
         string subBatchId,
         string metadataURI,
         string dataHash,
+        string? signerPrivateKey = null, 
         CancellationToken ct = default);
 
     Task<string> ReadyParentAsync(
         string batchId,
         string metadataURI,
         string dataHash,
+        string? signerPrivateKey = null, 
         CancellationToken ct = default);
 
     Task<string> ReadySubAsync(
         string subBatchId,
         string metadataURI,
         string dataHash,
+        string? signerPrivateKey = null, 
         CancellationToken ct = default);
+
 }

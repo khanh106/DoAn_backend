@@ -22,24 +22,28 @@ public class GetAssignedBatchesQueryHandler
         _currentUser = currentUser;
     }
 
-    public async Task<IReadOnlyList<AssignedBatchDto>> Handle(
+       public async Task<IReadOnlyList<AssignedBatchDto>> Handle(
         GetAssignedBatchesQuery req, CancellationToken ct)
     {
         var userId = Guard.RequireFarmer(_currentUser);
         var list = await _uow.BatchWorkers.GetByUserIdAsync(userId, status: null, ct: ct);
 
-        return list.Select(bw => new AssignedBatchDto(
-            BatchId: bw.BatchId,
-            BatchCode: bw.Batch.BatchCode,
-            FruitTypeName: bw.Batch.FruitType?.Name ?? string.Empty,
-            ProductName: bw.Batch.Product?.Name ?? string.Empty,
-            FarmAreaName: bw.Batch.FarmArea?.Name ?? string.Empty,
-            CurrentStage: bw.Batch.CurrentStage.ToString(),
-            PlantingDate: bw.Batch.PlantingDate,
-            ExpectedQuantity: bw.Batch.ExpectedQuantity,
-            IsRepresentative: bw.IsRepresentative,
-            AssignedDate: bw.AssignedDate,
-            WorkerStatus: bw.Status.ToString()
-        )).ToList();
+        // Lọc danh sách: Chỉ hiển thị những lô hàng đã được HTX khởi tạo thành công (đã có MetadataURI)
+        return list
+            .Where(bw => bw.Batch != null && !string.IsNullOrEmpty(bw.Batch.MetadataURI))
+            .Select(bw => new AssignedBatchDto(
+                BatchId: bw.BatchId,
+                BatchCode: bw.Batch.BatchCode,
+                FruitTypeName: bw.Batch.FruitType?.Name ?? string.Empty,
+                ProductName: bw.Batch.Product?.Name ?? string.Empty,
+                FarmAreaName: bw.Batch.FarmArea?.Name ?? string.Empty,
+                CurrentStage: bw.Batch.CurrentStage.ToString(),
+                PlantingDate: bw.Batch.PlantingDate,
+                ExpectedQuantity: bw.Batch.ExpectedQuantity,
+                IsRepresentative: bw.IsRepresentative,
+                AssignedDate: bw.AssignedDate,
+                WorkerStatus: bw.Status.ToString()
+            )).ToList();
     }
+
 }

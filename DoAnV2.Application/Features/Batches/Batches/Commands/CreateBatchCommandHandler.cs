@@ -100,6 +100,7 @@ public class CreateBatchCommandHandler : IRequestHandler<CreateBatchCommand, Bat
             throw new ForbiddenException("FarmArea này không thuộc Processor của bạn.");
 
         // ========== 4. Validate Workers (BR-03 + phải là FARMER + APPROVED) ==========
+                // ========== 4. Validate Workers (BR-03 + phải là FARMER + APPROVED) ==========
         var workers = await _uow.Users.GetByIdsAsync(req.AssignedWorkerIds.Distinct(), ct);
         if (workers.Count != req.AssignedWorkerIds.Distinct().Count())
             throw new NotFoundException("Một hoặc nhiều WorkerId không tồn tại.");
@@ -113,6 +114,9 @@ public class CreateBatchCommandHandler : IRequestHandler<CreateBatchCommand, Bat
                 throw new ValidationException(
                     $"User '{w.FullName}' chưa được Admin duyệt (Status={w.Status}).");
         }
+
+        // ĐƯA RA NGOÀI: Khai báo repUser ở ngoài khối try để cuối hàm MapToDto có thể sử dụng được
+        var repUser = workers.First(w => w.Id == req.RepresentativeWorkerId);
 
         // ========== 5. Tạo Batch entity (chưa save - để gom transaction) ==========
         var batch = new Batch
@@ -145,99 +149,112 @@ public class CreateBatchCommandHandler : IRequestHandler<CreateBatchCommand, Bat
         await _uow.Batches.AddAsync(batch, ct);
         await _uow.SaveChangesAsync(ct); // Save trước để có batch.Id
 
-        // ========== 7. Upload Metadata JSON lên IPFS ==========
-        var metadata = new
+        try
         {
-            batchId = batch.Id,
-            batchCode = batch.BatchCode,
-            fruitType = fruitType.Name,
-            fruitTypeCode = fruitType.Code,
-            product = product.Name,
-            productVariety = product.Variety,
-            farmArea = farmArea.Name,
-            farmProvince = farmArea.Province,
-            plantingDate = batch.PlantingDate,
-            expectedQuantity = batch.ExpectedQuantity,
-            representativeWorkerId = batch.RepresentativeWorkerId,
-            workers = workers.Select(w => new
+            // ========== 7. Upload Metadata JSON lên IPFS ==========
+            var metadata = new
             {
-                userId = w.Id,
-                fullName = w.FullName,
-                isRepresentative = w.Id == batch.RepresentativeWorkerId,
-            }),
-            createdAt = batch.CreatedAt,
-        };
+                batchId = batch.Id,
+                batchCode = batch.BatchCode,
+                fruitType = fruitType.Name,
+                fruitTypeCode = fruitType.Code,
+                product = product.Name,
+                productVariety = product.Variety,
+                farmArea = farmArea.Name,
+                farmProvince = farmArea.Province,
+                plantingDate = batch.PlantingDate,
+                expectedQuantity = batch.ExpectedQuantity,
+                representativeWorkerId = batch.RepresentativeWorkerId,
+                workers = workers.Select(w => new
+                {
+                    userId = w.Id,
+                    fullName = w.FullName,
+                    isRepresentative = w.Id == batch.RepresentativeWorkerId,
+                }),
+                createdAt = batch.CreatedAt,
+            };
 
-        var (metadataURI, dataHash) = await _ipfs.UploadJsonAsync(
-            metadata,
-            fileName: $"batch-{batch.BatchCode}-metadata.json",
-            ct: ct);
+            var (metadataURI, dataHash) = await _ipfs.UploadJsonAsync(
+                metadata,
+                fileName: $"batch-{batch.BatchCode}-metadata.json",
+                ct: ct);
 
-        batch.MetadataURI = metadataURI;
-        batch.DataHash = dataHash;
-        _uow.Batches.Update(batch);
+            batch.MetadataURI = metadataURI;
+            batch.DataHash = dataHash;
+            _uow.Batches.Update(batch);
 
-        // ========== 8. Gọi Smart Contract: createBatch ==========
-        // ️ Nếu HTX đã lưu Private Key ➔ Dùng ví HTX ký; nếu chưa lưu ➔ Dùng ví Hệ thống (Admin) ký dự phòng.
-        var createTxHash = await _blockchain.CreateBatchAsync(
-            batchId: batch.Id.ToString(),
-            batchCode: batch.BatchCode,
-            fruitType: fruitType.Code,
-            metadataURI: metadataURI,
-            dataHash: dataHash,
-            signerPrivateKey: processorPrivateKey, 
-            ct: ct);
+            // ========== 8. Gọi Smart Contract: createBatch ==========
+            var createTxHash = await _blockchain.CreateBatchAsync(
+                batchId: batch.Id.ToString(),
+                batchCode: batch.BatchCode,
+                fruitType: fruitType.Code,
+                metadataURI: metadataURI,
+                dataHash: dataHash,
+                signerPrivateKey: processorPrivateKey, 
+                ct: ct);
 
-        _logger.LogInformation(
-            "Batch {BatchCode} created on-chain. TxHash={TxHash} (Signer={SignerType})",
-            batch.BatchCode, createTxHash, string.IsNullOrWhiteSpace(processorPrivateKey) ? "AdminFallback" : "HTXPrivateKey");
+            _logger.LogInformation(
+                "Batch {BatchCode} created on-chain. TxHash={TxHash} (Signer={SignerType})",
+                batch.BatchCode, createTxHash, string.IsNullOrWhiteSpace(processorPrivateKey) ? "AdminFallback" : "HTXPrivateKey");
 
-        // ========== 9. Với từng worker: assignWorker + setRepresentative ==========
-        var repUser = workers.First(w => w.Id == req.RepresentativeWorkerId);
-
-        foreach (var w in workers)
-        {
-            if (string.IsNullOrWhiteSpace(w.WalletAddress))
+            // ========== 9. Với từng worker: assignWorker + setRepresentative ==========
+            // (Đã loại bỏ khai báo repUser ở đây vì đã đưa lên trên)
+            foreach (var w in workers)
             {
-                _logger.LogWarning(
-                    "Worker {UserId} chưa có WalletAddress - bỏ qua assignWorker on-chain.",
-                    w.Id);
-                continue;
+                if (string.IsNullOrWhiteSpace(w.WalletAddress))
+                {
+                    _logger.LogWarning(
+                        "Worker {UserId} chưa có WalletAddress - bỏ qua assignWorker on-chain.",
+                        w.Id);
+                    continue;
+                }
+
+                try
+                {
+                    await _blockchain.AssignWorkerAsync(
+                        batchId: batch.Id.ToString(),
+                        workerAddress: w.WalletAddress,
+                        ct: ct);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex,
+                        "assignWorker on-chain thất bại cho worker {UserId}.", w.Id);
+                }
             }
 
-            try
+            // setRepresentative (chỉ 1 lần)
+            if (!string.IsNullOrWhiteSpace(repUser.WalletAddress))
             {
-                await _blockchain.AssignWorkerAsync(
-                    batchId: batch.Id.ToString(),
-                    workerAddress: w.WalletAddress,
-                    ct: ct);
+                try
+                {
+                    await _blockchain.SetRepresentativeAsync(
+                        batchId: batch.Id.ToString(),
+                        repAddress: repUser.WalletAddress,
+                        ct: ct);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex,
+                        "setRepresentative on-chain thất bại cho rep {UserId}.", repUser.Id);
+                }
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex,
-                    "assignWorker on-chain thất bại cho worker {UserId}.", w.Id);
-                // BR-42: Không rollback DB - lỗi đã ghi vào BlockchainTransaction.
-            }
+
+            // Lưu các cập nhật Metadata & Hash thành công cuối cùng
+            await _uow.SaveChangesAsync(ct);
         }
-
-        // setRepresentative (chỉ 1 lần)
-        if (!string.IsNullOrWhiteSpace(repUser.WalletAddress))
+        catch (Exception ex)
         {
-            try
-            {
-                await _blockchain.SetRepresentativeAsync(
-                    batchId: batch.Id.ToString(),
-                    repAddress: repUser.WalletAddress,
-                    ct: ct);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex,
-                    "setRepresentative on-chain thất bại cho rep {UserId}.", repUser.Id);
-            }
+            _logger.LogError(ex, "Đẩy IPFS hoặc tạo lô Smart Contract thất bại. Đang tiến hành xóa thông tin lô {BatchCode} khỏi database.", batch.BatchCode);
+            
+            // FIX: Xóa lô hàng khỏi database (BatchWorkers liên kết sẽ tự động bị xóa theo nhờ cơ chế Cascade Delete)
+            _uow.Batches.Remove(batch);
+            
+            await _uow.SaveChangesAsync(ct);
+            
+            // Ném ngược Exception ra ngoài để API trả về lỗi cho Frontend
+            throw;
         }
-
-        await _uow.SaveChangesAsync(ct);
 
         // ========== 10. Trả về DTO ==========
         return MapToDto(batch, workers, fruitType.Name, product.Name,

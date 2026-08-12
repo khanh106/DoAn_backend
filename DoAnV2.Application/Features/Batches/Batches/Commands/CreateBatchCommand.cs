@@ -11,4 +11,6 @@ public record CreateBatchCommand(
     DateTime PlantingDate,
     double ExpectedQuantity,
     IReadOnlyList<Guid> AssignedWorkerIds,
-    Guid RepresentativeWorkerId) : IRequest<BatchDto>;
+    Guid RepresentativeWorkerId) : IRequest<BatchDto>; 
+   
+   
