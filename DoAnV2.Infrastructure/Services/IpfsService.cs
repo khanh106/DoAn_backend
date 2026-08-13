@@ -157,12 +157,14 @@ public class IpfsService : IIpfsService
     /// Vì PutObjectResponse không trả về Metadata, ta buộc phải HEAD
     /// object vừa upload để đọc metadata.
     /// </summary>
-    private async Task<string?> ExtractCidFromResponseAsync(string key, CancellationToken ct)
-
+   private async Task<string?> ExtractCidFromResponseAsync(string key, CancellationToken ct)
 {
-    // Filebase trả CID trong metadata với key "cid" (AWS SDK tự bỏ prefix "x-amz-meta-").
-    // Thử tối đa 8 lần với delay tăng dần (Filebase cần thời gian pin).
-    for (int i = 0; i < 8; i++)
+    // Filebase thường trả CID trong metadata trong vòng ~500ms-1s sau khi PUT xong.
+    // Để tối ưu UX, ta chỉ thử tối đa 2 lần rồi fallback về S3 key (qua backend proxy).
+    // Worst case delay: 500ms + 1000ms = 1.5s thay vì 18s như trước.
+    var delays = new[] { 500, 1000 };
+
+    for (int i = 0; i < delays.Length; i++)
     {
         try
         {
@@ -172,21 +174,12 @@ public class IpfsService : IIpfsService
                 Key = key,
             }, ct);
 
-            // AWS SDK .NET: head.Metadata["cid"] tự động map từ "x-amz-meta-cid"
             if (head.Metadata is not null)
             {
-                // Duyệt tất cả metadata keys mà Filebase có thể trả về
-                foreach (var metaKey in head.Metadata.Keys)
-                {
-                    _logger.LogDebug("Metadata key: {Key} = {Value}", metaKey, head.Metadata[metaKey]);
-                }
-
-                // Ưu tiên key "cid" (Filebase chuẩn)
                 var cid = head.Metadata["cid"];
                 if (!string.IsNullOrWhiteSpace(cid))
                     return cid;
 
-                // Fallback: thử các key khác
                 string[] fallbackKeys = { "ipfs-cid", "x-amz-meta-cid" };
                 foreach (var k in fallbackKeys)
                 {
@@ -196,11 +189,9 @@ public class IpfsService : IIpfsService
                 }
             }
 
-            // Kiểm tra cả ETag - một số trường hợp Filebase dùng ETag = CID
             if (!string.IsNullOrWhiteSpace(head.ETag))
             {
                 var etag = head.ETag.Trim('"');
-                // CID v1 bắt đầu bằng "bafy" hoặc "bafk"
                 if (etag.StartsWith("bafy") || etag.StartsWith("bafk") || etag.StartsWith("Qm"))
                 {
                     _logger.LogInformation("Lấy CID từ ETag: {CID}", etag);
@@ -213,12 +204,12 @@ public class IpfsService : IIpfsService
             _logger.LogWarning(ex, "Lần {Attempt}: Không đọc được CID từ metadata (key={Key}).", i + 1, key);
         }
 
-        // Delay tăng dần: 500ms, 1s, 1.5s, 2s, ...
-        await Task.Delay((i + 1) * 500, ct);
+        if (i < delays.Length - 1)
+            await Task.Delay(delays[i], ct);
     }
 
-        // Fallback: trả về null để caller biết không có CID → dùng S3 key thay thế
-    _logger.LogWarning("Filebase không trả CID cho key '{Key}' sau 8 lần thử. Sẽ dùng S3 key làm fallback.", key);
+    // Fallback: dùng S3 key làm URI (frontend proxy sẽ serve file qua /api/v1/ipfs/{key})
+    _logger.LogWarning("Filebase không trả CID cho key '{Key}' sau {N} lần thử. Dùng S3 key fallback.", key, delays.Length);
     return null;
 }
 

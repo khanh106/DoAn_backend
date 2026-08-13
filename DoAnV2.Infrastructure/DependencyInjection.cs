@@ -89,6 +89,11 @@ public static class DependencyInjection
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUser, CurrentUser>();
 
+        // ============ Background queue cho blockchain jobs (Cách 2) ============
+        services.AddSingleton<DoAnV2.Application.Common.Queues.IBlockchainJobQueue,
+ DoAnV2.Application.Common.Queues.BlockchainJobQueue>();
+        services.AddHostedService<DoAnV2.Infrastructure.Services.Blockchain.BlockchainJobProcessor>();
+
         return services;
     }
 }

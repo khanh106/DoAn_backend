@@ -127,32 +127,41 @@ public class ApplicationDbContext : DbContext
 
         // ===== Seed =====
         b.ApplySeed();
+
+        // ===================================================================
+        // CLEANUP shadow FK/property kết thúc bằng "Id1" hoặc "Id2"
+        // EF tự sinh khi có 2+ navigation trỏ về cùng entity → gây lỗi
+        // "Invalid column name 'farm_area_id2'" khi Insert.
+        // Phải xóa FK trước, sau đó mới RemoveProperty (vì FK giữ reference).
+        // ===================================================================
         var shadowFks = b.Model.GetEntityTypes()
-    .SelectMany(e => e.GetDeclaredForeignKeys())
-    .Where(fk => fk.Properties.Any(p => p.Name.EndsWith("Id1")))
-    .ToList();
-// Bước 1: Xóa FK trước
-foreach (var fk in shadowFks)
-{
-    fk.DeclaringEntityType.RemoveForeignKey(fk);
-}
-// Bước 2: Xóa các shadow property sau khi FK đã được gỡ
-var shadowPropNames = shadowFks
-    .SelectMany(fk => fk.Properties.Select(p => p.Name))
-    .Distinct()
-    .ToList();
-foreach (var entityType in b.Model.GetEntityTypes())
-{
-    foreach (var propName in shadowPropNames)
-    {
-        var shadowProp = entityType.FindProperty(propName);
-        if (shadowProp != null)
+            .SelectMany(e => e.GetDeclaredForeignKeys())
+            .Where(fk => fk.Properties.Any(p =>
+                p.Name.EndsWith("Id1") || p.Name.EndsWith("Id2")))
+            .ToList();
+
+        foreach (var fk in shadowFks)
         {
-            entityType.RemoveProperty(shadowProp);
+            fk.DeclaringEntityType.RemoveForeignKey(fk);
+        }
+
+        var shadowPropNames = shadowFks
+            .SelectMany(fk => fk.Properties.Select(p => p.Name))
+            .Distinct()
+            .ToList();
+
+        foreach (var entityType in b.Model.GetEntityTypes())
+        {
+            foreach (var propName in shadowPropNames)
+            {
+                var shadowProp = entityType.FindProperty(propName);
+                if (shadowProp != null)
+                {
+                    entityType.RemoveProperty(shadowProp);
+                }
+            }
         }
     }
-}
-}
 
     private void SetSoftDeleteFilter<TEntity>(ModelBuilder b) where TEntity : BaseEntity
     {

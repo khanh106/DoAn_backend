@@ -1,6 +1,7 @@
 using DoAnV2.Application.Common.Exceptions;
 using DoAnV2.Application.Common.Interfaces;
 using DoAnV2.Application.Common.Options;
+using DoAnV2.Application.Common.Queues;
 using DoAnV2.Application.Features.Batches.Dtos;
 using DoAnV2.Domain.Entities;
 using DoAnV2.Domain.Enums;
@@ -13,13 +14,10 @@ namespace DoAnV2.Application.Features.Batches.Batches.Commands;
 /// <summary>
 /// TASK 05 - Mục 5.1: API Tạo Lô sản xuất.
 ///   1. Kiểm tra BatchCode duy nhất (BR-01).
-///   2. Tạo bản ghi Batch (CurrentStage = STAGE_PLANTING).
+///   2. Tạo bản ghi Batch (CurrentStage = STAGE_PLANTING, BlockchainSyncStatus = PENDING).
 ///   3. Tạo danh sách BatchWorker (IsRepresentative=true cho representative).
 ///   4. Upload Metadata JSON lên IPFS ➔ (MetadataURI, DataHash).
-///   5. Gọi SC: createBatch.
-///   6. Với mỗi worker: gọi SC assignWorker.
-///   7. Với người đại diện: gọi SC setRepresentative.
-///   8. Lưu BlockchainTransaction (đã làm trong BlockchainService).
+///   5. Enqueue blockchain job (createBatch + assignWorker + setRepresentative chạy nền).
 ///
 /// BR-06: Bắt buộc 1 đại diện (IsRepresentative=true).
 /// BR-46: Worker chưa có WalletAddress ➔ vẫn assign vào DB, SC assignWorker bị bỏ qua (ghi log warning).
@@ -29,43 +27,35 @@ public class CreateBatchCommandHandler : IRequestHandler<CreateBatchCommand, Bat
     private readonly IUnitOfWork _uow;
     private readonly ICurrentUser _currentUser;
     private readonly IIpfsService _ipfs;
-    private readonly IBlockchainService _blockchain;
     private readonly IWalletService _walletService;
     private readonly WalletOptions _walletOptions;
     private readonly ILogger<CreateBatchCommandHandler> _logger;
+    private readonly IBlockchainJobQueue _blockchainQueue;
 
     public CreateBatchCommandHandler(
         IUnitOfWork uow,
         ICurrentUser currentUser,
         IIpfsService ipfs,
-        IBlockchainService blockchain,
         IWalletService walletService,
         IOptions<WalletOptions> walletOptions,
-        ILogger<CreateBatchCommandHandler> logger)
+        ILogger<CreateBatchCommandHandler> logger,
+        IBlockchainJobQueue blockchainQueue)
     {
         _uow = uow;
         _currentUser = currentUser;
         _ipfs = ipfs;
-        _blockchain = blockchain;
         _walletService = walletService;
         _walletOptions = walletOptions.Value;
         _logger = logger;
+        _blockchainQueue = blockchainQueue;
     }
 
     public async Task<BatchDto> Handle(CreateBatchCommand req, CancellationToken ct)
     {
-        // ========== 1. Validate Processor & Lấy Ví HTX đã liên kết ==========
+        // ========== 1. Validate Processor ==========
         var processorId = Guard.RequireProcessor(_currentUser);
         var processorUser = await _uow.Users.GetByIdAsync(processorId, ct)
             ?? throw new NotFoundException($"Không tìm thấy Processor User {processorId}.");
-
-        string? processorPrivateKey = null;
-        if (!string.IsNullOrWhiteSpace(processorUser.EncryptedPrivateKey))
-        {
-            processorPrivateKey = _walletService.DecryptPrivateKey(
-                processorUser.EncryptedPrivateKey, _walletOptions.EncryptionKey);
-        }
-
 
         if (string.IsNullOrWhiteSpace(req.BatchCode))
             throw new ValidationException("BatchCode không được trống.");
@@ -83,7 +73,7 @@ public class CreateBatchCommandHandler : IRequestHandler<CreateBatchCommand, Bat
         if (await _uow.Batches.BatchCodeExistsAsync(batchCode, ct))
             throw new ConflictException($"BatchCode '{batchCode}' đã tồn tại.");
 
-        // ========== 3. Validate FKs (FruitType/Product/FarmArea thuộc Processor) ==========
+        // ========== 3. Validate FKs ==========
         var fruitType = await _uow.FruitTypes.GetByIdAsync(req.FruitTypeId, ct)
             ?? throw new NotFoundException($"Không tìm thấy FruitType {req.FruitTypeId}.");
         if (fruitType.ProcessorId != processorId)
@@ -99,8 +89,7 @@ public class CreateBatchCommandHandler : IRequestHandler<CreateBatchCommand, Bat
         if (farmArea.ProcessorId != processorId)
             throw new ForbiddenException("FarmArea này không thuộc Processor của bạn.");
 
-        // ========== 4. Validate Workers (BR-03 + phải là FARMER + APPROVED) ==========
-                // ========== 4. Validate Workers (BR-03 + phải là FARMER + APPROVED) ==========
+        // ========== 4. Validate Workers ==========
         var workers = await _uow.Users.GetByIdsAsync(req.AssignedWorkerIds.Distinct(), ct);
         if (workers.Count != req.AssignedWorkerIds.Distinct().Count())
             throw new NotFoundException("Một hoặc nhiều WorkerId không tồn tại.");
@@ -115,10 +104,9 @@ public class CreateBatchCommandHandler : IRequestHandler<CreateBatchCommand, Bat
                     $"User '{w.FullName}' chưa được Admin duyệt (Status={w.Status}).");
         }
 
-        // ĐƯA RA NGOÀI: Khai báo repUser ở ngoài khối try để cuối hàm MapToDto có thể sử dụng được
         var repUser = workers.First(w => w.Id == req.RepresentativeWorkerId);
 
-        // ========== 5. Tạo Batch entity (chưa save - để gom transaction) ==========
+        // ========== 5. Tạo Batch entity ==========
         var batch = new Batch
         {
             BatchCode = batchCode,
@@ -130,28 +118,40 @@ public class CreateBatchCommandHandler : IRequestHandler<CreateBatchCommand, Bat
             RepresentativeWorkerId = req.RepresentativeWorkerId,
             ProcessorId = processorId,
             CurrentStage = BatchStage.STAGE_PLANTING,
+            BlockchainSyncStatus = BlockchainSyncStatus.PENDING,
         };
 
-        // ========== 6. Tạo danh sách BatchWorker ==========
-        var now = DateTime.UtcNow;
-        foreach (var uid in req.AssignedWorkerIds.Distinct())
-        {
-            batch.BatchWorkers.Add(new BatchWorker
+        // ========== 6. Tạo danh sách BatchWorker (BR-06: 1 đại diện) ==========
+        var batchWorkers = req.AssignedWorkerIds
+            .Distinct()
+            .Select(workerId => new BatchWorker
             {
                 BatchId = batch.Id,
-                UserId = uid,
-                IsRepresentative = uid == req.RepresentativeWorkerId,
-                AssignedDate = now,
+                UserId = workerId,
+                IsRepresentative = workerId == req.RepresentativeWorkerId,
+                AssignedDate = DateTime.UtcNow,
                 Status = WorkerAssignmentStatus.PENDING,
-            });
-        }
+            })
+            .ToList();
+        batch.BatchWorkers = batchWorkers;
 
+        // ========== INSERT BATCH + BATCH WORKERS VÀO DB TRƯỚC ==========
+        // Phải insert trước để:
+        //   (a) có batch.Id chính xác trong DB cho IPFS metadata
+        //   (b) tránh lỗi "batch không tìm thấy" khi reload sau upload IPFS
         await _uow.Batches.AddAsync(batch, ct);
-        await _uow.SaveChangesAsync(ct); // Save trước để có batch.Id
+        await _uow.SaveChangesAsync(ct);
 
+        _logger.LogInformation(
+            "Batch {BatchCode} (Id={BatchId}) đã tạo off-chain với {WorkerCount} workers.",
+            batch.BatchCode, batch.Id, batchWorkers.Count);
+
+       // ========== 7. Upload Metadata JSON lên IPFS ==========
+        // QUAN TRỌNG: phải upload IPFS TRƯỚC rồi mới enqueue blockchain job.
+        // Nếu enqueue trước, BlockchainJobProcessor chạy nền sẽ touch batch →
+        // EF tracking ở đây bị lệch → UPDATE trả về 0 rows → DbUpdateConcurrencyException.
         try
         {
-            // ========== 7. Upload Metadata JSON lên IPFS ==========
             var metadata = new
             {
                 batchId = batch.Id,
@@ -179,84 +179,46 @@ public class CreateBatchCommandHandler : IRequestHandler<CreateBatchCommand, Bat
                 fileName: $"batch-{batch.BatchCode}-metadata.json",
                 ct: ct);
 
+            // Update bằng ExecuteUpdate (raw SQL UPDATE) để hoàn toàn bypass EF change tracker.
+            // Cách này tránh lỗi "association has been severed" khi EF tracking navigation
+            // và FK required không khớp giữa entity và DB state.
+            var updatedAt = DateTime.UtcNow;
+            await _uow.Batches.UpdateMetadataAsync(batch.Id, metadataURI, dataHash, updatedAt, ct);
+
+            // Đồng bộ lại các property trong memory để DTO trả về đúng.
             batch.MetadataURI = metadataURI;
             batch.DataHash = dataHash;
-            _uow.Batches.Update(batch);
-
-            // ========== 8. Gọi Smart Contract: createBatch ==========
-            var createTxHash = await _blockchain.CreateBatchAsync(
-                batchId: batch.Id.ToString(),
-                batchCode: batch.BatchCode,
-                fruitType: fruitType.Code,
-                metadataURI: metadataURI,
-                dataHash: dataHash,
-                signerPrivateKey: processorPrivateKey, 
-                ct: ct);
-
-            _logger.LogInformation(
-                "Batch {BatchCode} created on-chain. TxHash={TxHash} (Signer={SignerType})",
-                batch.BatchCode, createTxHash, string.IsNullOrWhiteSpace(processorPrivateKey) ? "AdminFallback" : "HTXPrivateKey");
-
-            // ========== 9. Với từng worker: assignWorker + setRepresentative ==========
-            // (Đã loại bỏ khai báo repUser ở đây vì đã đưa lên trên)
-            foreach (var w in workers)
-            {
-                if (string.IsNullOrWhiteSpace(w.WalletAddress))
-                {
-                    _logger.LogWarning(
-                        "Worker {UserId} chưa có WalletAddress - bỏ qua assignWorker on-chain.",
-                        w.Id);
-                    continue;
-                }
-
-                try
-                {
-                    await _blockchain.AssignWorkerAsync(
-                        batchId: batch.Id.ToString(),
-                        workerAddress: w.WalletAddress,
-                        ct: ct);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex,
-                        "assignWorker on-chain thất bại cho worker {UserId}.", w.Id);
-                }
-            }
-
-            // setRepresentative (chỉ 1 lần)
-            if (!string.IsNullOrWhiteSpace(repUser.WalletAddress))
-            {
-                try
-                {
-                    await _blockchain.SetRepresentativeAsync(
-                        batchId: batch.Id.ToString(),
-                        repAddress: repUser.WalletAddress,
-                        ct: ct);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex,
-                        "setRepresentative on-chain thất bại cho rep {UserId}.", repUser.Id);
-                }
-            }
-
-            // Lưu các cập nhật Metadata & Hash thành công cuối cùng
-            await _uow.SaveChangesAsync(ct);
+            batch.UpdatedAt = updatedAt;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Đẩy IPFS hoặc tạo lô Smart Contract thất bại. Đang tiến hành xóa thông tin lô {BatchCode} khỏi database.", batch.BatchCode);
-            
-            // FIX: Xóa lô hàng khỏi database (BatchWorkers liên kết sẽ tự động bị xóa theo nhờ cơ chế Cascade Delete)
-            _uow.Batches.Remove(batch);
-            
-            await _uow.SaveChangesAsync(ct);
-            
-            // Ném ngược Exception ra ngoài để API trả về lỗi cho Frontend
+            _logger.LogError(ex,
+                "Upload metadata IPFS thất bại cho Batch {BatchCode}. Xóa batch khỏi DB.",
+                batch.BatchCode);
+
+            // Xóa batch + workers bằng raw SQL DELETE để bypass EF change tracker,
+            // tránh lỗi "association has been severed".
+            await _uow.Batches.DeleteBatchWithWorkersAsync(batch.Id, ct);
+
             throw;
         }
 
-        // ========== 10. Trả về DTO ==========
+        // ========== 8. Enqueue job blockchain (SAU khi upload IPFS xong) ==========
+        // batch.Id lúc này đã được EF generate thật (sau SaveChangesAsync ở bước 6).
+        // Không gọi batch.Id trước SaveChanges → sẽ là Guid.Empty.
+        if (batch.Id == Guid.Empty)
+        {
+            _logger.LogError(
+                "BUG: batch.Id vẫn là Guid.Empty sau SaveChanges. Kiểm tra BatchRepository.");
+            throw new InvalidOperationException("batch.Id chưa được generate.");
+        }
+        await _blockchainQueue.EnqueueAsync(batch.Id, ct);
+
+        _logger.LogInformation(
+            "Batch {BatchCode} đã tạo off-chain, enqueue blockchain job. Response trả về ngay.",
+            batch.BatchCode);
+
+        // ========== 9. Trả về DTO ==========
         return MapToDto(batch, workers, fruitType.Name, product.Name,
             farmArea.Name, repUser.FullName);
     }
@@ -305,6 +267,10 @@ public class CreateBatchCommandHandler : IRequestHandler<CreateBatchCommand, Bat
             ProcessorName: string.Empty,
             CreatedAt: batch.CreatedAt,
             UpdatedAt: batch.UpdatedAt,
-            Workers: workerDtos);
+            Workers: workerDtos,
+            BlockchainSyncStatus: batch.BlockchainSyncStatus.ToString(),
+            CreateBatchTxHash: batch.CreateBatchTxHash,
+            BlockchainSyncedAt: batch.BlockchainSyncedAt,
+            BlockchainSyncError: batch.BlockchainSyncError);
     }
 }

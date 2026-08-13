@@ -100,45 +100,23 @@ public class CreateCultivationLogCommandHandler
             throw new ForbiddenException("Không có quyền thực hiện thao tác này.");
         }
 
-        // ========== 3. Upload danh sách ảnh lên IPFS ==========
-        var imageUris = new List<string>();
-        var images = req.Images ?? new List<IFormFile>();
-        foreach (var img in images)
-        {
-            if (img is null || img.Length == 0) continue;
-            var (fileUri, _) = await _ipfs.UploadFileAsync(img, ct);
-            imageUris.Add(fileUri);
-        }
+        
+// ========== 3. Upload song song: ảnh + metadata JSON ==========
+var images = req.Images ?? new List<IFormFile>();
+var validImages = images.Where(img => img is not null && img.Length > 0).ToList();
 
-        // ========== 4. Upload metadata JSON (cho traceability, optional) ==========
-        var metadata = new
-        {
-            batchId = batch.Id,
-            batchCode = batch.BatchCode,
-            workerId = userId,
-            activityType = req.ActivityType.Trim(),
-            description = req.Description,
-            logDate = req.LogDate,
-            imageCount = imageUris.Count,
-            uploadedAt = DateTime.UtcNow,
-        };
+// Task upload ảnh (chạy nền)
+var imagesTask = Task.WhenAll(
+    validImages.Select(img => _ipfs.UploadFileAsync(img, ct))
+);
 
-        string? metadataUri = null;
-        try
-        {
-            var (uri, _) = await _ipfs.UploadJsonAsync(
-                metadata,
-                fileName: $"cultivation-{batch.BatchCode}-{DateTime.UtcNow:yyyyMMddHHmmss}.json",
-                ct: ct);
-            metadataUri = uri;
-        }
-        catch (Exception ex)
-        {
-            // Không block nghiệp vụ nếu upload metadata JSON lỗi.
-            _logger.LogWarning(ex,
-                "Upload metadata JSON cho cultivation log của Batch {BatchId} thất bại - tiếp tục lưu ảnh.",
-                batch.Id);
-        }
+// Task upload metadata JSON (chạy nền)
+var metadataTask = UploadMetadataSafeAsync(batch.BatchCode, userId, req, ct);
+
+// Đợi cả hai — chạy song song, tổng thời gian = max(ảnh, metadata)
+var imageResults = await imagesTask;
+var metadataUri = await metadataTask;
+var imageUris = imageResults.Select(r => r.FileURI).ToList();
 
         // ========== 5. Lưu CultivationLog OFF-CHAIN (BR-07/BR-08) ==========
         var log = new CultivationLog
@@ -163,8 +141,48 @@ public class CreateCultivationLogCommandHandler
             ActivityType: log.ActivityType,
             Description: log.Description,
             LogDate: log.LogDate,
-            MetadataURI: log.MetadataURI,
+             MetadataURI: log.MetadataURI,
             ImageUrls: imageUris,
             CreatedAt: log.CreatedAt);
+    }
+
+    /// <summary>
+    /// Helper: Upload metadata JSON lên IPFS - không block nghiệp vụ nếu lỗi.
+    /// Được chạy song song với upload ảnh trong Handle() để tiết kiệm ~1.5s.
+    /// </summary>
+    private async Task<string?> UploadMetadataSafeAsync(
+        string batchCode,
+        Guid userId,
+        CreateCultivationLogCommand req,
+        CancellationToken ct)
+    {
+        try
+        {
+            var metadata = new
+            {
+                batchId = req.BatchId,
+                batchCode = batchCode,
+                workerId = userId,
+                activityType = req.ActivityType.Trim(),
+                description = req.Description,
+                logDate = req.LogDate,
+                imageCount = (req.Images ?? new List<IFormFile>())
+                    .Count(i => i is not null && i.Length > 0),
+                uploadedAt = DateTime.UtcNow,
+            };
+
+            var (uri, _) = await _ipfs.UploadJsonAsync(
+                metadata,
+                fileName: $"cultivation-{batchCode}-{DateTime.UtcNow:yyyyMMddHHmmss}.json",
+                ct: ct);
+            return uri;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex,
+                "Upload metadata JSON cho cultivation log của Batch {BatchId} thất bại - tiếp tục lưu ảnh.",
+                req.BatchId);
+            return null;
+        }
     }
 }

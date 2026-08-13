@@ -28,10 +28,23 @@ public interface IBatchRepository
     void Remove(Batch entity);
 
     /// <summary>
+    /// Update scalar columns (MetadataURI, DataHash, UpdatedAt) của Batch bằng raw SQL
+    /// để tránh EF tracking navigation properties gây lỗi "association has been severed".
+    /// </summary>
+    Task UpdateMetadataAsync(Guid batchId, string metadataURI, string dataHash, DateTime updatedAt, CancellationToken ct = default);
+
+    /// <summary>
+    /// Xóa Batch + tất cả BatchWorkers liên quan bằng raw SQL DELETE,
+    /// bypass hoàn toàn EF change tracker để tránh lỗi "association has been severed".
+    /// </summary>
+    Task DeleteBatchWithWorkersAsync(Guid batchId, CancellationToken ct = default);
+
+    /// <summary>
     /// TASK 11 - Mục 11.1: Thống kê số lượng Parent Batch theo từng trạng thái - dùng cho Dashboard Admin.
     /// </summary>
     Task<BatchStats> GetStatsAsync(CancellationToken ct = default);
     Task<IReadOnlyList<Batch>> GetByProcessorIdAsync(Guid processorId, CancellationToken ct = default);
+
 }
 
 

@@ -1,4 +1,5 @@
 using DoAnV2.Domain.Common;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DoAnV2.Domain.Entities;
 
@@ -21,5 +22,9 @@ public class FarmArea : BaseEntity
 
     public string? PlantingCode { get; set; }
 
+    // [NotMapped] để EF KHÔNG tự tạo shadow FK "farm_area_id2"
+    // Quan hệ Batch↔FarmArea đã được khai báo rõ trong Batch.cs + OnModelCreating.
+    // Nếu để collection nav, EF sẽ tự tạo FK thứ 2 (farm_area_id2) gây lỗi khi INSERT.
+    [NotMapped]
     public ICollection<Batch> Batches { get; set; } = new List<Batch>();
 }

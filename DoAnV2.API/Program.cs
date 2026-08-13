@@ -193,15 +193,51 @@ using (var scope = app.Services.CreateScope())
                     CONSTRAINT FK_distributors_users_retailer_id FOREIGN KEY (retailer_id) REFERENCES users(id) ON DELETE NO ACTION
                 );
             END
-            ELSE IF NOT EXISTS (
-                SELECT 1 FROM sys.columns 
-                WHERE object_id = OBJECT_ID(N'distributors') 
-                AND name = N'retailer_id'
-            )
-            BEGIN
-                ALTER TABLE distributors ADD retailer_id UNIQUEIDENTIFIER NULL;
-            END
-        ");
+                       ELSE IF NOT EXISTS (
+               SELECT 1 FROM sys.columns                WHERE object_id = OBJECT_ID(N'distributors')
+               AND name = N'retailer_id'
+           )
+           BEGIN
+               ALTER TABLE distributors ADD retailer_id UNIQUEIDENTIFIER NULL;
+           END
+
+                      -- Thêm cột blockchain_sync_status cho batches (Cách 2)
+           IF NOT EXISTS (
+               SELECT 1 FROM sys.columns
+               WHERE object_id = OBJECT_ID(N'batches')
+               AND name = N'blockchain_sync_status'
+           )
+           BEGIN
+ALTER TABLE batches ADD blockchain_sync_status INT NOT NULL DEFAULT 0;
+           END
+
+           IF NOT EXISTS (
+               SELECT 1 FROM sys.columns
+               WHERE object_id = OBJECT_ID(N'batches')
+               AND name = N'create_batch_tx_hash'
+           )
+           BEGIN
+               ALTER TABLE batches ADD create_batch_tx_hash NVARCHAR(200) NULL;
+           END
+
+           IF NOT EXISTS (
+               SELECT 1 FROM sys.columns
+               WHERE object_id = OBJECT_ID(N'batches')
+               AND name = N'blockchain_synced_at'
+           )
+           BEGIN
+               ALTER TABLE batches ADD blockchain_synced_at DATETIME2 NULL;
+           END
+
+           IF NOT EXISTS (
+               SELECT 1 FROM sys.columns
+               WHERE object_id = OBJECT_ID(N'batches')
+               AND name = N'blockchain_sync_error'
+           )
+           BEGIN
+               ALTER TABLE batches ADD blockchain_sync_error NVARCHAR(MAX) NULL;
+           END
+       ");
     }
     catch (Exception ex)
     {
@@ -224,7 +260,9 @@ app.UseExceptionHandler(errApp =>
         var (status, msg) = ex switch
         {
             DomainException de => (de.StatusCode, de.Message),
-            _ => (500, app.Environment.IsDevelopment() && ex != null ? ex.Message : "Lỗi hệ thống. Vui lòng thử lại sau.")
+            _ => (500, app.Environment.IsDevelopment() && ex != null
+                ? $"{ex.Message} | INNER: {ex.InnerException?.GetType().Name}: {ex.InnerException?.Message}"
+                : "Lỗi hệ thống. Vui lòng thử lại sau.")
         };
 
         ctx.Response.StatusCode = status;
@@ -233,7 +271,10 @@ app.UseExceptionHandler(errApp =>
         {
             status,
             message = msg,
-            error = ex?.GetType().Name
+            error = ex?.GetType().Name,
+            innerError = app.Environment.IsDevelopment() ? ex?.InnerException?.Message : null,
+            innerType = app.Environment.IsDevelopment() ? ex?.InnerException?.GetType().Name : null,
+            stack = app.Environment.IsDevelopment() ? ex?.StackTrace : null
         });
     });
 });

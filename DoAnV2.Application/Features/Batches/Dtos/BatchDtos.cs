@@ -21,7 +21,13 @@ public record BatchDto(
     string ProcessorName,
     DateTime CreatedAt,
     DateTime? UpdatedAt,
-    IReadOnlyList<BatchWorkerDto> Workers);
+    IReadOnlyList<BatchWorkerDto> Workers,
+
+    // ===== Mới thêm cho Cách 2: blockchain sync =====
+    string BlockchainSyncStatus = "PENDING",
+    string? CreateBatchTxHash = null,
+    DateTime? BlockchainSyncedAt = null,
+    string? BlockchainSyncError = null);
 
 public record BatchWorkerDto(
     Guid UserId,

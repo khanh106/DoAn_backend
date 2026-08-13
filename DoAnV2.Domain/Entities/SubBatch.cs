@@ -1,5 +1,6 @@
 using DoAnV2.Domain.Common;
 using DoAnV2.Domain.Enums;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DoAnV2.Domain.Entities;
 
@@ -29,5 +30,9 @@ public class SubBatch : BaseEntity
     public ICollection<Inspection> Inspections { get; set; } = new List<Inspection>();
     public ICollection<Packaging> Packagings { get; set; } = new List<Packaging>();
     public ICollection<Shipment> Shipments { get; set; } = new List<Shipment>();
+
+    // [NotMapped] để EF KHÔNG tự tạo shadow FK "sub_batch_id2".
+    // Quan hệ đã được khai báo rõ trong BlockchainTransaction.cs + OnModelCreating.
+    [NotMapped]
     public ICollection<BlockchainTransaction> BlockchainTransactions { get; set; } = new List<BlockchainTransaction>();
 }
